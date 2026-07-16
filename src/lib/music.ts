@@ -1,0 +1,325 @@
+/**
+ * 乐理工具库
+ * ============================================
+ * 处理 MIDI 音高与音名、VexFlow key 之间的转换，
+ * 以及随机音符生成、和弦生成、谱号音域判定等逻辑。
+ */
+
+import type { NoteInfo, NoteLetter, AccidentalType, ClefType, ChordInfo, ChordSize, DifficultyLevel } from '../types';
+
+/** 12 个半音对应的音名（升号体系） */
+const SHARP_NAMES: NoteLetter[] = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
+const SHARP_ACCIDENTALS: AccidentalType[] = [null, '#', null, '#', null, null, '#', null, '#', null, '#', null];
+
+/** 12 个半音对应的音名（降号体系） */
+const FLAT_NAMES: NoteLetter[] = ['C', 'D', 'D', 'E', 'E', 'F', 'G', 'A', 'A', 'B', 'B'];
+const FLAT_ACCIDENTALS: AccidentalType[] = [null, 'b', null, 'b', null, null, 'b', null, 'b', null, 'b', null];
+
+/**
+ * 将 MIDI 音高编号转换为 NoteInfo 对象。
+ *
+ * @param midi MIDI 音高编号 (0-127)，60 = C4 (Middle C)
+ * @param preferFlat 是否优先使用降号命名（默认升号）
+ */
+export function midiToNoteInfo(midi: number, preferFlat = false): NoteInfo {
+  const pitchClass = ((midi % 12) + 12) % 12; // 0-11
+  const octave = Math.floor(midi / 12) - 1; // MIDI 60 = C4 => octave 4
+
+  const names = preferFlat ? FLAT_NAMES : SHARP_NAMES;
+  const accidentals = preferFlat ? FLAT_ACCIDENTALS : SHARP_ACCIDENTALS;
+
+  const letter = names[pitchClass];
+  const accidental = accidentals[pitchClass];
+
+  // 构建显示名
+  const accidentalSymbol = accidental === '#' ? '♯' : accidental === 'b' ? '♭' : '';
+  const name = `${letter}${accidentalSymbol}`;
+
+  // 构建 VexFlow key（小写 + 斜杠 + 八度）
+  const vexAccidental = accidental ?? '';
+  const vexKey = `${letter.toLowerCase()}${vexAccidental}/${octave}`;
+
+  return {
+    midi,
+    name,
+    letter,
+    accidental,
+    octave,
+    vexKey,
+    clef: getClefForMidi(midi),
+  };
+}
+
+/**
+ * 根据 MIDI 音高判断更适合哪个谱号。
+ * 高音谱号通常覆盖 G3(55) 以上，低音谱号覆盖 E3(52) 以下。
+ * 中间区域根据上下文决定，这里以 C4(60) 为分界。
+ */
+export function getClefForMidi(midi: number): 'treble' | 'bass' {
+  // C4 = 60 为分界线，C4 及以上用高音谱号
+  // 但低音谱号也可表示到 A4 左右，这里取 G3(55) 作为低音谱号上限
+  if (midi >= 60) return 'treble';
+  return 'bass';
+}
+
+/**
+ * 获取音名（不含八度），用于 UI 显示。
+ */
+export function midiToNoteName(midi: number, preferFlat = false): string {
+  return midiToNoteInfo(midi, preferFlat).name;
+}
+
+/**
+ * 生成随机音符，确保分布均匀且不连续重复。
+ *
+ * @param range     MIDI 音高范围 [low, high]（含两端）
+ * @param includeAccidentals 是否包含带升降号的音
+ * @param lastMidi  上一个音符的 MIDI（避免重复），可选
+ * @returns 新的 MIDI 音高编号
+ */
+export function generateRandomNote(
+  range: { low: number; high: number },
+  includeAccidentals: boolean,
+  lastMidi: number | null,
+): number {
+  // 构建候选列表
+  const candidates: number[] = [];
+  for (let midi = range.low; midi <= range.high; midi++) {
+    const info = midiToNoteInfo(midi);
+    if (!includeAccidentals && info.accidental !== null) continue;
+    candidates.push(midi);
+  }
+
+  if (candidates.length === 0) return range.low;
+
+  // 过滤掉与上一个相同的音（如果候选数 > 1）
+  let pool = candidates;
+  if (lastMidi !== null && candidates.length > 1) {
+    pool = candidates.filter((m) => m !== lastMidi);
+  }
+
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ============================================
+// 和弦定义与生成
+// ============================================
+
+/** 和弦类型定义 */
+interface ChordTypeDef {
+  /** 和弦类型标识 */
+  id: string;
+  /** 中文名称 */
+  name: string;
+  /** 音程间隔（半音数），从根音开始 */
+  intervals: number[];
+}
+
+/** 2 音符（音程）类型 */
+const INTERVAL_TYPES: ChordTypeDef[] = [
+  { id: 'maj3', name: '大三度', intervals: [0, 4] },
+  { id: 'min3', name: '小三度', intervals: [0, 3] },
+  { id: 'p5', name: '纯五度', intervals: [0, 7] },
+  { id: 'p4', name: '纯四度', intervals: [0, 5] },
+  { id: 'maj6', name: '大六度', intervals: [0, 9] },
+  { id: 'oct', name: '纯八度', intervals: [0, 12] },
+];
+
+/** 3 音符（三和弦）类型 */
+const TRIAD_TYPES: ChordTypeDef[] = [
+  { id: 'major', name: '大三和弦', intervals: [0, 4, 7] },
+  { id: 'minor', name: '小三和弦', intervals: [0, 3, 7] },
+  { id: 'dim', name: '减三和弦', intervals: [0, 3, 6] },
+  { id: 'aug', name: '增三和弦', intervals: [0, 4, 8] },
+];
+
+/** 4 音符（七和弦）类型 */
+const SEVENTH_TYPES: ChordTypeDef[] = [
+  { id: 'dom7', name: '属七和弦', intervals: [0, 4, 7, 10] },
+  { id: 'maj7', name: '大七和弦', intervals: [0, 4, 7, 11] },
+  { id: 'min7', name: '小七和弦', intervals: [0, 3, 7, 10] },
+  { id: 'm7b5', name: '半减七和弦', intervals: [0, 3, 6, 10] },
+];
+
+/** 根据 ChordSize 获取对应的和弦类型列表 */
+function getChordTypes(size: ChordSize): ChordTypeDef[] {
+  switch (size) {
+    case 2: return INTERVAL_TYPES;
+    case 3: return TRIAD_TYPES;
+    case 4: return SEVENTH_TYPES;
+    default: return TRIAD_TYPES;
+  }
+}
+
+/**
+ * 生成随机和弦。
+ * 确保和弦的所有音符都在指定音域范围内。
+ *
+ * @param range     MIDI 音高范围 [low, high]（含两端）
+ * @param size      和弦音符数量
+ * @param lastRoot  上一个和弦根音的 MIDI（避免重复），可选
+ * @returns ChordInfo 对象，包含音符数组、和弦名称等
+ */
+export function generateRandomChord(
+  range: { low: number; high: number },
+  size: ChordSize,
+  lastRoot: number | null,
+): ChordInfo {
+  const chordTypes = getChordTypes(size);
+
+  // 收集所有可行的（根音, 和弦类型）组合
+  const candidates: { rootMidi: number; chordType: ChordTypeDef }[] = [];
+
+  for (let rootMidi = range.low; rootMidi <= range.high; rootMidi++) {
+    for (const chordType of chordTypes) {
+      // 检查所有和弦音是否在范围内
+      const allInRange = chordType.intervals.every(
+        (interval) => rootMidi + interval >= range.low && rootMidi + interval <= range.high,
+      );
+      if (allInRange) {
+        candidates.push({ rootMidi, chordType });
+      }
+    }
+  }
+
+  if (candidates.length === 0) {
+    // 兜底：使用最低音作为根音的第一个和弦类型
+    const fallbackType = chordTypes[0];
+    const rootMidi = range.low;
+    const notes = fallbackType.intervals.map((interval) => {
+      const note = midiToNoteInfo(rootMidi + interval);
+      return note;
+    });
+    const rootInfo = midiToNoteInfo(rootMidi);
+    return {
+      notes,
+      name: `${rootInfo.name}${fallbackType.name}`,
+      root: rootInfo,
+      type: fallbackType.id,
+    };
+  }
+
+  // 过滤掉与上一个根音相同的（如果候选数 > 1）
+  let pool = candidates;
+  if (lastRoot !== null && candidates.length > 1) {
+    const filtered = candidates.filter((c) => c.rootMidi !== lastRoot);
+    if (filtered.length > 0) pool = filtered;
+  }
+
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  const rootInfo = midiToNoteInfo(chosen.rootMidi);
+
+  // 构建和弦音符（升序排列）
+  const notes = chosen.chordType.intervals.map((interval) =>
+    midiToNoteInfo(chosen.rootMidi + interval),
+  );
+
+  return {
+    notes,
+    name: `${rootInfo.name}${chosen.chordType.name}`,
+    root: rootInfo,
+    type: chosen.chordType.id,
+  };
+}
+
+/**
+ * 默认训练音域配置。
+ * 高音谱号：C4(60) ~ A5(81)
+ * 低音谱号：E2(40) ~ C4(60)
+ * 双谱表：E2(40) ~ A5(81)
+ */
+export const DEFAULT_RANGES: Record<ClefType, { low: number; high: number }> = {
+  treble: { low: 60, high: 81 },
+  bass: { low: 40, high: 60 },
+  both: { low: 40, high: 81 },
+};
+
+/** 音域预设选项（供设置面板使用） */
+export const RANGE_PRESETS: { label: string; clef: ClefType; low: number; high: number }[] = [
+  { label: '高音谱号 C4 ~ A5', clef: 'treble', low: 60, high: 81 },
+  { label: '高音谱号 C4 ~ C6', clef: 'treble', low: 60, high: 84 },
+  { label: '高音谱号 G3 ~ G5', clef: 'treble', low: 55, high: 79 },
+  { label: '低音谱号 E2 ~ C4', clef: 'bass', low: 40, high: 60 },
+  { label: '低音谱号 C2 ~ G3', clef: 'bass', low: 36, high: 55 },
+  { label: '低音谱号 E2 ~ E4', clef: 'bass', low: 40, high: 64 },
+  { label: '双谱表 E2 ~ A5', clef: 'both', low: 40, high: 81 },
+  { label: '双谱表 C3 ~ C5', clef: 'both', low: 48, high: 72 },
+];
+
+/**
+ * 将 MIDI 音高转换为可读的显示文本。
+ * 如 60 -> "C4"
+ */
+export function midiToDisplayString(midi: number, preferFlat = false): string {
+  const info = midiToNoteInfo(midi, preferFlat);
+  return `${info.name}${info.octave}`;
+}
+
+// ============================================
+// 难度等级系统
+// ============================================
+
+/** 难度等级配置 */
+export interface DifficultyLevelConfig {
+  level: DifficultyLevel;
+  name: string;
+  desc: string;
+  clef: ClefType;
+  lowNote: number;
+  highNote: number;
+  includeAccidentals: boolean;
+}
+
+/** 5 个难度等级定义（渐进式学习） */
+export const DIFFICULTY_LEVELS: DifficultyLevelConfig[] = [
+  {
+    level: 1,
+    name: '入门',
+    desc: 'C D E F G 五个音',
+    clef: 'treble',
+    lowNote: 60,
+    highNote: 67,
+    includeAccidentals: false,
+  },
+  {
+    level: 2,
+    name: '基础',
+    desc: 'C D E F G A B 七个音',
+    clef: 'treble',
+    lowNote: 60,
+    highNote: 71,
+    includeAccidentals: false,
+  },
+  {
+    level: 3,
+    name: '进阶',
+    desc: 'C4 ~ A5 全音域',
+    clef: 'treble',
+    lowNote: 60,
+    highNote: 81,
+    includeAccidentals: false,
+  },
+  {
+    level: 4,
+    name: '高级',
+    desc: '含升降号 ♯ ♭',
+    clef: 'treble',
+    lowNote: 60,
+    highNote: 81,
+    includeAccidentals: true,
+  },
+  {
+    level: 5,
+    name: '大师',
+    desc: '高低音双谱表 + 升降号',
+    clef: 'both',
+    lowNote: 40,
+    highNote: 81,
+    includeAccidentals: true,
+  },
+];
+
+/** 根据难度等级获取配置 */
+export function getDifficultyConfig(level: DifficultyLevel): DifficultyLevelConfig {
+  return DIFFICULTY_LEVELS.find((l) => l.level === level) ?? DIFFICULTY_LEVELS[0];
+}
