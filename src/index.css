@@ -1,12 +1,13 @@
 /* ============================================
-   全局样式 & 主题变量
+   全局样式 & 设计令牌 — Newsprint 设计系统
    ============================================
-   设计语言：Anthropic 风格
-   - 暖象牙画布 (#faf9f5)，绝不用纯白做底色
-   - 珊瑚强调色 (#d97757)，克制使用
-   - 全程暖灰，禁用冷蓝灰
-   - 扁平硬边，环形阴影代替边框
-   - 衬线标题 + 无衬线正文
+   "All the News That's Fit to Print."
+   - 暖白报纸底色 #F9F9F7，绝非纯白
+   - 墨黑 #111111 为主要文字和边框色
+   - 编辑红 #CC0000 极少量用于强调
+   - 零圆角，硬边框，扁平设计
+   - 衬线标题(Playfair Display) + 衬线正文(Lora) + 无衬线UI(Inter) + 等宽数据(JetBrains Mono)
+   - 永久浅色模式，无暗色主题
    ============================================ */
 
 /* ========== Noto Music 字体（本地嵌入） ========== */
@@ -25,119 +26,68 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  border-radius: 0 !important; /* Newsprint: 零圆角，无例外 */
 }
 
-/* ========== 浅色主题（默认） ========== */
-:root,
-[data-theme='light'] {
-  /* 画布与表面 */
-  --bg-color: #faf9f5;        /* 暖象牙画布 */
-  --bg-elevated: #f5f4ed;     /* 羊皮纸，次级暖底 */
-  --bg-card: #ffffff;          /* 纯白卡片 */
-  --bg-hover: #f0eee6;        /* 暖沙悬停 */
-  --bg-input: #f5f4ed;        /* 输入框底 */
+/* ========== Newsprint 设计令牌 ========== */
+:root {
+  /* 色彩 */
+  --bg: #F9F9F7;              /* 报纸暖白 */
+  --bg-elevated: #F5F5F5;     /* 抬升表面 */
+  --bg-card: #FFFFFF;          /* 卡片纯白 */
+  --bg-hover: #F0F0F0;        /* 悬停灰 */
+  --bg-input: #F5F5F5;        /* 输入框底 */
+  --bg-inverted: #111111;     /* 反转黑底 */
+  --bg-inverted-hover: #2a2a2a;
 
-  /* 文本 */
-  --text-primary: #141413;    /* 墨黑 */
-  --text-secondary: #6c6a64;  /* 暖灰 */
-  --text-tertiary: #8e8b82;   /* 浅暖灰 */
-  --text-inverse: #faf9f5;    /* 深色表面上的文字 */
+  --fg: #111111;              /* 墨黑文字 */
+  --fg-secondary: #525252;    /* 次级文字 */
+  --fg-tertiary: #737373;     /* 三级文字 */
+  --fg-muted: #A3A3A3;        /* 静音文字 */
+  --fg-inverse: #F9F9F7;      /* 反转文字（黑底上） */
 
-  /* 边框 */
-  --border-color: #e6dfd8;    /* 暖色细边框 */
-  --border-focus: #d97757;    /* 珊瑚聚焦 */
+  --accent: #CC0000;          /* 编辑红 */
+  --accent-hover: #A30000;
+  --accent-light: #FFF0F0;
 
-  /* 强调色 */
-  --accent: #d97757;          /* 珊瑚 */
-  --accent-hover: #c96442;    /* 陶土深色 */
-  --accent-light: #fdf0eb;    /* 极淡珊瑚 */
-  --accent-foreground: #ffffff;
+  --border: #111111;          /* 主边框：墨黑 */
+  --border-muted: #E5E5E0;    /* 次级边框：分隔灰 */
+  --border-light: #F0F0F0;
 
   /* 语义色 */
-  --success: #5db872;
-  --success-light: #e8f5ec;
-  --error: #c64545;
-  --error-light: #fbeaea;
-  --warning: #d4a017;
+  --success: #15803D;
+  --success-light: #F0FDF4;
+  --error: #CC0000;
+  --error-light: #FFF0F0;
+  --warning: #B45309;
 
   /* 音符色 */
-  --note-default: #141413;
-  --note-correct: #5db872;
-  --note-wrong: #c64545;
+  --note-default: #111111;
+  --note-correct: #15803D;
+  --note-wrong: #CC0000;
 
   /* 谱表色 */
-  --staff-color: #3d3d3a;
+  --staff-color: #111111;
 
-  /* 阴影 — 极轻，以环形阴影为主 */
-  --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.04);
-  --shadow-md: 0 2px 8px rgba(20, 20, 19, 0.06);
-  --shadow-lg: 0 4px 24px rgba(20, 20, 19, 0.08);
-  --shadow-xl: 0 8px 48px rgba(20, 20, 19, 0.1);
+  /* 阴影 — 硬偏移阴影，非柔光投影 */
+  --shadow-hard: 4px 4px 0px 0px #111111;
+  --shadow-hard-sm: 2px 2px 0px 0px #111111;
 
-  /* 环形阴影（Anthropic 招牌手法） */
-  --ring: 0 0 0 1px var(--border-color);
-  --ring-accent: 0 0 0 1px var(--accent);
-
-  /* 圆角 */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* 圆角 — 全部为 0 */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
 
   /* 过渡 */
-  --transition: 150ms ease;
-  --transition-slow: 300ms ease;
+  --transition: 200ms ease-out;
+  --transition-slow: 300ms ease-out;
 
   /* 字体 */
-  --font-display: Georgia, 'Noto Serif SC', 'Songti SC', serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-}
-
-/* ========== 深色主题 ========== */
-[data-theme='dark'] {
-  --bg-color: #181715;        /* 深墨 */
-  --bg-elevated: #252320;     /* 抬升深面板 */
-  --bg-card: #1f1e1b;         /* 卡片底 */
-  --bg-hover: #2a2925;        /* 悬停 */
-  --bg-input: #252320;        /* 输入框 */
-
-  --text-primary: #faf9f5;    /* 暖白 */
-  --text-secondary: #a09d96;  /* 暖灰 */
-  --text-tertiary: #6c6a64;   /* 深暖灰 */
-  --text-inverse: #141413;
-
-  --border-color: #3a3833;    /* 深暖边框 */
-  --border-focus: #d97757;
-
-  --accent: #d97757;
-  --accent-hover: #e08868;
-  --accent-light: #2a1f1a;
-  --accent-foreground: #ffffff;
-
-  --success: #7dba8a;
-  --success-light: #1a2e22;
-  --error: #e08080;
-  --error-light: #2e1a1a;
-  --warning: #e8b450;
-
-  --note-default: #e8e4dc;
-  --note-correct: #7dba8a;
-  --note-wrong: #e08080;
-
-  --staff-color: #a09d96;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 8px 48px rgba(0, 0, 0, 0.6);
-
-  --ring: 0 0 0 1px var(--border-color);
-  --ring-accent: 0 0 0 1px var(--accent);
-
-  --font-display: Georgia, 'Noto Serif SC', 'Songti SC', serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Playfair Display', 'Noto Serif SC', 'Songti SC', Georgia, serif;
+  --font-body: 'Lora', 'Noto Serif SC', 'Songti SC', Georgia, serif;
+  --font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 }
 
 /* ========== 基础元素 ========== */
@@ -149,15 +99,16 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--bg-color);
-  color: var(--text-primary);
-  transition: background-color var(--transition-slow), color var(--transition-slow);
+  background-color: var(--bg);
+  /* 点阵纹理背景 — 模拟报纸纸张质感 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23111111' fill-opacity='0.04' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
+  color: var(--fg);
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.625;
 }
 
 button {
-  font-family: inherit;
+  font-family: var(--font-sans);
   cursor: pointer;
   border: none;
   background: none;
@@ -165,28 +116,66 @@ button {
 }
 
 select {
-  font-family: inherit;
+  font-family: var(--font-sans);
 }
 
 input[type='checkbox'] {
   display: none;
 }
 
-/* 滚动条美化 */
+/* 滚动条 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-elevated);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
+  background: var(--fg);
+  border: 2px solid var(--bg-elevated);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  background: var(--accent);
+}
+
+/* ========== Newsprint 工具类 ========== */
+
+/* 硬偏移阴影悬停效果 */
+.hard-shadow-hover {
+  transition: all var(--transition);
+}
+.hard-shadow-hover:hover {
+  box-shadow: var(--shadow-hard);
+  transform: translate(-2px, -2px);
+}
+
+/* 报纸纹理叠加 */
+.newsprint-texture {
+  position: relative;
+}
+.newsprint-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(0deg, transparent 98%, rgba(0,0,0,0.02) 100%),
+    linear-gradient(90deg, transparent 98%, rgba(0,0,0,0.02) 100%);
+  background-size: 3px 3px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* 装饰性分隔符 */
+.ornamental-divider {
+  padding: 1rem 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--fg-muted);
+  letter-spacing: 1em;
+  user-select: none;
 }

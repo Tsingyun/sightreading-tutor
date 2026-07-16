@@ -9,7 +9,11 @@
  * - 识别并显示和弦名称和转位信息
  * - 支持虚拟键盘点击输入（点击切换按下/松开）
  *
- * 防闪烁设计：
+ * 双状态设计：
+ * - activeNotes: 当前实际按下的键（用于键盘高亮，立即响应）
+ * - displayedNotes: 屏幕上显示的音符（松开后延迟 2s 消失，用于五线谱和和弦信息）
+ *
+ * 防闪烁/防跳变设计：
  * - 五线谱始终渲染（无音符时渲染空谱表），避免组件挂载/卸载
  * - 信息区域始终保留空间，用 opacity + visibility 过渡代替条件渲染
  * - 布局尺寸恒定，不随音符变化而跳动
@@ -22,7 +26,10 @@ import { midiToNoteInfo } from '../lib/music';
 import type { IdentifiedChord, ThemeMode, ChordInfo } from '../types';
 
 interface FreePlayProps {
+  /** 当前按下的 MIDI 音符（用于键盘高亮） */
   activeNotes: number[];
+  /** 屏幕上显示的音符（含释放延迟，用于五线谱和和弦信息） */
+  displayedNotes: number[];
   chordInfo: IdentifiedChord | null;
   theme: ThemeMode;
   onVirtualKeyPress: (midi: number) => void;
@@ -31,15 +38,16 @@ interface FreePlayProps {
 
 export function FreePlay({
   activeNotes,
+  displayedNotes,
   chordInfo,
   theme,
   onVirtualKeyPress,
   onClear,
 }: FreePlayProps) {
-  // 将活跃音符转换为 NoteInfo 数组，用于五线谱渲染
+  // 将显示中的音符转换为 NoteInfo 数组，用于五线谱渲染
   const noteInfos = useMemo(
-    () => activeNotes.map((m) => midiToNoteInfo(m)),
-    [activeNotes],
+    () => displayedNotes.map((m) => midiToNoteInfo(m)),
+    [displayedNotes],
   );
 
   // 构造 ChordInfo 对象传给 Staff 组件
@@ -62,7 +70,7 @@ export function FreePlay({
     return 'chord';
   }, [chordInfo]);
 
-  const hasNotes = activeNotes.length > 0;
+  const hasNotes = displayedNotes.length > 0;
 
   return (
     <div className="freeplay">
@@ -137,7 +145,7 @@ export function FreePlay({
         </button>
       </div>
 
-      {/* 虚拟键盘 */}
+      {/* 虚拟键盘 — 高亮使用 activeNotes（即时响应） */}
       <VirtualKeyboard
         currentNote={null}
         currentChord={null}

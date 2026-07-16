@@ -26,22 +26,14 @@ interface StaffProps {
   theme: ThemeMode;
 }
 
-function resolveThemeColors(theme: ThemeMode): ThemeColors {
-  if (theme === 'dark') {
-    return {
-      staffColor: '#d4d0c8',
-      bgColor: '#1a1815',
-      noteDefault: '#e8e4dc',
-      noteCorrect: '#7dba8a',
-      noteWrong: '#e08080',
-    };
-  }
+function resolveThemeColors(_theme: ThemeMode): ThemeColors {
+  // Newsprint 配色：永久浅色，墨黑 + 报纸白 + 编辑红
   return {
-    staffColor: '#3d3d3a',
-    bgColor: '#faf9f5',
-    noteDefault: '#141413',
-    noteCorrect: '#5db872',
-    noteWrong: '#c64545',
+    staffColor: '#111111',
+    bgColor: '#F9F9F7',
+    noteDefault: '#111111',
+    noteCorrect: '#15803D',
+    noteWrong: '#CC0000',
   };
 }
 

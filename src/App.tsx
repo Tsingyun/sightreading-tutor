@@ -42,7 +42,7 @@ import type { AppMode } from './types';
 import './App.css';
 
 function App() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const midi = useMidi();
   const training = useTraining();
   const freePlay = useFreePlay();
@@ -102,7 +102,7 @@ function App() {
 
   return (
     <div className="app" data-theme={theme}>
-      <Header theme={theme} onToggleTheme={toggleTheme} onShowGuide={() => setGuideVisible(true)} />
+      <Header onShowGuide={() => setGuideVisible(true)} />
 
       <main className="app-main">
         {/* 左侧：主练习区域 */}
@@ -191,6 +191,7 @@ function App() {
               {/* —— 自由弹奏模式 —— */}
               <FreePlay
                 activeNotes={freePlay.activeNotes}
+                displayedNotes={freePlay.displayedNotes}
                 chordInfo={freePlay.chordInfo}
                 theme={theme}
                 onVirtualKeyPress={handleVirtualKeyPress}
@@ -242,7 +243,14 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>识谱大师 · 基于 Web MIDI API + VexFlow 构建 · 支持单音/和弦训练 + 自由弹奏</p>
+        <div className="app-footer__meta">
+          <span>Edition: Vol 1.0</span>
+          <span className="app-footer__divider">·</span>
+          <span>基于 Web MIDI API + VexFlow 构建</span>
+          <span className="app-footer__divider">·</span>
+          <span>支持单音/和弦训练 + 自由弹奏</span>
+        </div>
+        <p className="app-footer__copyright">© {new Date().getFullYear()} 识谱大师 — All Rights Reserved</p>
       </footer>
 
       {/* 100 题里程碑弹窗 */}
