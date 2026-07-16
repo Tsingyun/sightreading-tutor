@@ -70,12 +70,20 @@ export function FreePlay({
     return 'chord';
   }, [chordInfo]);
 
+  // 已释放但仍在显示中的音符（用于渐隐效果）
+  const releasedNoteSet = useMemo(() => {
+    const activeSet = new Set(activeNotes);
+    return new Set(displayedNotes.filter((n) => !activeSet.has(n)));
+  }, [activeNotes, displayedNotes]);
+
   const hasNotes = displayedNotes.length > 0;
+  // 全部音符已释放（正在渐隐等待移除）
+  const allReleased = hasNotes && activeNotes.length === 0;
 
   return (
     <div className="freeplay">
       {/* 五线谱区域 — 始终渲染，无音符时显示空谱表 */}
-      <div className="staff-wrapper freeplay-staff-wrapper">
+      <div className={`staff-wrapper freeplay-staff-wrapper ${allReleased ? 'freeplay-staff-wrapper--fading' : ''}`}>
         <Staff
           note={null}
           chord={chordForStaff}
@@ -94,7 +102,7 @@ export function FreePlay({
       {/* 和弦信息 + 音名标签 — 始终保留空间，用 opacity 过渡 */}
       <div className={`freeplay-info ${hasNotes ? 'freeplay-info--visible' : ''}`}>
         {/* 和弦名称展示 */}
-        <div className={`freeplay-chord freeplay-chord--${chordCategory}`}>
+        <div className={`freeplay-chord freeplay-chord--${chordCategory} ${allReleased ? 'freeplay-chord--fading' : ''}`}>
           <div className="freeplay-chord__label">
             {chordCategory === 'single' ? '音名' : chordCategory === 'interval' ? '音程' : chordCategory === 'chord' ? '和弦' : '—'}
           </div>
@@ -124,7 +132,7 @@ export function FreePlay({
             noteInfos.map((note, index) => (
               <div
                 key={`${note.midi}-${index}`}
-                className={`freeplay-note-badge ${note.clef === 'bass' ? 'freeplay-note-badge--bass' : ''}`}
+                className={`freeplay-note-badge ${note.clef === 'bass' ? 'freeplay-note-badge--bass' : ''} ${releasedNoteSet.has(note.midi) ? 'freeplay-note-badge--fading' : ''}`}
               >
                 <span className="freeplay-note-badge__name">{note.name}</span>
                 <span className="freeplay-note-badge__octave">{note.octave}</span>

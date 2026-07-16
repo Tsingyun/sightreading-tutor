@@ -1159,6 +1159,12 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
 .freeplay-staff-wrapper {
   min-height: 380px;
   position: relative;
+  transition: opacity 1.8s ease-out;
+}
+
+/* 全部音符释放后，五线谱渐隐 */
+.freeplay-staff-wrapper--fading {
+  opacity: 0.3;
 }
 
 /* 无音符时的提示覆盖层 */
@@ -1226,6 +1232,12 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
 
 .freeplay-chord--none {
   opacity: 0.5;
+}
+
+/* 全部音符释放后，和弦信息渐隐 */
+.freeplay-chord--fading {
+  opacity: 0.2;
+  transition: opacity 1.8s ease-out;
 }
 
 .freeplay-chord__label {
@@ -1303,13 +1315,19 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
   padding: 0.25rem 0.625rem;
   background: var(--fg);
   color: var(--fg-inverse);
-  transition: opacity var(--transition);
+  transition: opacity 1.8s ease-out, transform 1.8s ease-out;
   border: 1px solid var(--fg);
 }
 
 .freeplay-note-badge--bass {
   background: var(--bg-card);
   color: var(--fg);
+}
+
+/* 已释放的音符渐隐 — 1.8s 内淡出，与 2s 移除延迟同步 */
+.freeplay-note-badge--fading {
+  opacity: 0.12;
+  transform: scale(0.92);
 }
 
 .freeplay-note-badge__name {

@@ -7,7 +7,8 @@
  * 音符释放延迟：
  * - activeNotes: 当前实际按下的音符（立即响应 MIDI）
  * - displayedNotes: 屏幕上显示的音符（松开后延迟 2s 消失）
- * - chordInfo 从 displayedNotes 派生，确保用户有时间阅读和弦名称
+ * - chordInfo 优先从 activeNotes 派生（立即响应），
+ *   当 activeNotes 为空时（全部释放中）从 displayedNotes 派生（保持显示）
  *
  * 性能：chordInfo 使用 useMemo 直接派生，避免双重渲染。
  */
@@ -24,7 +25,7 @@ export interface UseFreePlayReturn {
   activeNotes: number[];
   /** 屏幕上显示的音符（含释放延迟，用于五线谱和和弦信息） */
   displayedNotes: number[];
-  /** 识别出的和弦信息（基于 displayedNotes） */
+  /** 识别出的和弦信息（优先基于 activeNotes，释放中基于 displayedNotes） */
   chordInfo: IdentifiedChord | null;
   /** 按下音符 */
   handleNoteOn: (midi: number) => void;
@@ -39,11 +40,13 @@ export function useFreePlay(): UseFreePlayReturn {
   const [displayedNotes, setDisplayedNotes] = useState<number[]>([]);
   const releaseTimersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
-  // 从 displayedNotes 派生 chordInfo
+  // 和弦识别：优先用 activeNotes（立即响应，避免旧音符混入），
+  // 全部释放中时用 displayedNotes（保持和弦信息可见）
   const chordInfo = useMemo<IdentifiedChord | null>(() => {
-    if (displayedNotes.length === 0) return null;
-    return identifyChord(displayedNotes);
-  }, [displayedNotes]);
+    if (activeNotes.length > 0) return identifyChord(activeNotes);
+    if (displayedNotes.length > 0) return identifyChord(displayedNotes);
+    return null;
+  }, [activeNotes, displayedNotes]);
 
   const handleNoteOn = useCallback((midi: number) => {
     // 取消该音符的释放定时器（如果存在）
