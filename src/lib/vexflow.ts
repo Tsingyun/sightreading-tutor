@@ -253,17 +253,22 @@ function drawChordLabel(context: RenderContext, name: string, x: number, staveY:
 /**
  * 渲染双谱表（大谱表）。
  * 高音谱表在上，低音谱表在下，中间用竖线连接。
- * 支持单音和和弦两种模式。
+ *
+ * 支持将音符按谱号分配到各自对应的谱表上渲染：
+ * - clef='treble' 的音符画在高音谱表
+ * - clef='bass' 的音符画在低音谱表
+ * 这样自由弹奏模式下，跨音域的和弦可以同时显示在两个谱表上。
  */
 export function renderGrandStaff(options: RenderOptions): void {
   const { container, note, notes, playedIndices = [], answerState, themeColors } = options;
 
   container.innerHTML = '';
 
-  const scale = (notes && notes.length > 1) ? 2.0 : 3.0;
+  const hasMultipleNotes = notes && notes.length > 1;
+  const scale = hasMultipleNotes ? 2.0 : 3.0;
   const svgWidth = container.clientWidth || 600;
   const drawWidth = svgWidth / scale;
-  const baseHeight = (notes && notes.length > 1) ? 250 : 230;
+  const baseHeight = hasMultipleNotes ? 250 : 230;
   const svgHeight = baseHeight * scale;
 
   const renderer = new Renderer(container, Renderer.Backends.SVG);
@@ -304,33 +309,45 @@ export function renderGrandStaff(options: RenderOptions): void {
 
   if (!renderNotes) return;
 
-  // 根据第一个音符的 clef 决定画在哪个谱表上
-  const firstClef = renderNotes[0].clef;
-  const targetStave = firstClef === 'treble' ? trebleStave : bassStave;
+  // 按谱号分组
+  const trebleNotes = renderNotes.filter((n) => n.clef === 'treble');
+  const bassNotes = renderNotes.filter((n) => n.clef === 'bass');
 
-  const staveNote =
-    renderNotes.length === 1
-      ? new StaveNote({ keys: [renderNotes[0].vexKey], duration: 'w', clef: firstClef, autoStem: true })
-      : createChordNote(renderNotes, firstClef);
+  /** 在指定谱表上渲染一组音符 */
+  const renderOnStave = (
+    stave: Stave,
+    clefNotes: NoteInfo[],
+    clefName: 'treble' | 'bass',
+  ) => {
+    if (clefNotes.length === 0) return;
 
-  if (renderNotes.length === 1 && renderNotes[0].accidental) {
-    staveNote.addModifier(new Accidental(renderNotes[0].accidental), 0);
-  }
+    const staveNote =
+      clefNotes.length === 1
+        ? new StaveNote({ keys: [clefNotes[0].vexKey], duration: 'w', clef: clefName, autoStem: true })
+        : createChordNote(clefNotes, clefName);
 
-  if (renderNotes.length === 1) {
-    const color = getNoteColor(answerState, themeColors);
-    staveNote.setStyle({ fillStyle: color, strokeStyle: color });
-  }
+    if (clefNotes.length === 1 && clefNotes[0].accidental) {
+      staveNote.addModifier(new Accidental(clefNotes[0].accidental), 0);
+    }
 
-  const voice = new Voice({ numBeats: 4, beatValue: 4 });
-  voice.setMode(Voice.Mode.SOFT);
-  voice.addTickables([staveNote]);
+    if (clefNotes.length === 1) {
+      const color = getNoteColor(answerState, themeColors);
+      staveNote.setStyle({ fillStyle: color, strokeStyle: color });
+    }
 
-  const formatter = new Formatter();
-  formatter.joinVoices([voice]);
-  formatter.format([voice], staveWidth - 100);
+    const voice = new Voice({ numBeats: 4, beatValue: 4 });
+    voice.setMode(Voice.Mode.SOFT);
+    voice.addTickables([staveNote]);
 
-  voice.draw(context, targetStave);
+    const formatter = new Formatter();
+    formatter.joinVoices([voice]);
+    formatter.format([voice], staveWidth - 100);
+
+    voice.draw(context, stave);
+  };
+
+  renderOnStave(trebleStave, trebleNotes, 'treble');
+  renderOnStave(bassStave, bassNotes, 'bass');
 
   // 和弦模式：渲染后单独着色
   if (renderNotes.length > 1) {
@@ -342,14 +359,16 @@ export function renderGrandStaff(options: RenderOptions): void {
     || (options.flashLabel && !options.alwaysShowLabel);
   if (shouldShowLabelGrand && renderNotes.length === 1) {
     const centerX = staveX + staveWidth / 2;
-    const labelY = firstClef === 'treble' ? 45 : 140;
+    const labelY = renderNotes[0].clef === 'treble' ? 45 : 140;
     const labelColor = (answerState === 'pending' || options.flashLabel) ? themeColors.noteDefault : themeColors.noteCorrect;
     drawNoteLabel(context, renderNotes[0], centerX, labelY, labelColor);
   }
 
   if (options.chordName && (answerState === 'correct' || answerState === 'revealed')) {
     const centerX = staveX + staveWidth / 2;
-    const labelY = firstClef === 'treble' ? 45 : 140;
+    // 和弦名称画在有音符的谱表上方，优先高音谱表
+    const labelClef = trebleNotes.length > 0 ? 'treble' : 'bass';
+    const labelY = labelClef === 'treble' ? 45 : 140;
     drawChordLabel(context, options.chordName, centerX, labelY, themeColors.noteCorrect);
   }
 }

@@ -110,3 +110,28 @@ export interface AnswerRecord {
   reactionTime: number;
   timestamp: number;
 }
+
+/** 应用模式：识谱训练 / 自由弹奏 */
+export type AppMode = 'training' | 'freeplay';
+
+/** 识别出的和弦信息（自由弹奏模式） */
+export interface IdentifiedChord {
+  /** 所有按下的音符（按音高升序） */
+  notes: NoteInfo[];
+  /** 根音 */
+  root: NoteInfo | null;
+  /** 和弦完整名称（含转位，如"C大三和弦（第一转位）"） */
+  chordName: string;
+  /** 和弦类型名称（如"大三和弦"、"属七和弦"） */
+  chordTypeName: string;
+  /** 和弦类型标识（如"major"、"dom7"） */
+  chordType: string;
+  /** 转位编号（0=原位, 1=第一转位, 2=第二转位, 3=第三转位） */
+  inversion: number;
+  /** 转位名称（"原位"、"第一转位"等，单音/音程时为空） */
+  inversionName: string;
+  /** 最低音（贝斯音） */
+  bassNote: NoteInfo | null;
+  /** 音程名称（仅2音符时有效，如"大三度"） */
+  intervalName: string;
+}

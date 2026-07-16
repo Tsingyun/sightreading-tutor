@@ -20,6 +20,8 @@ interface VirtualKeyboardProps {
   range: { low: number; high: number };
   onKeyPress: (midi: number) => void;
   disabled?: boolean;
+  /** 自由弹奏模式下当前活跃的音符（高亮显示） */
+  freePlayActiveNotes?: number[];
 }
 
 /** 判断一个 MIDI 音是否为黑键 */
@@ -39,6 +41,7 @@ export function VirtualKeyboard({
   range,
   onKeyPress,
   disabled,
+  freePlayActiveNotes,
 }: VirtualKeyboardProps) {
   // 生成范围内的所有 MIDI 音
   const allMidiNotes = useMemo(() => {
@@ -74,6 +77,12 @@ export function VirtualKeyboard({
 
   const showTarget = answerState === 'revealed' || answerState === 'correct';
 
+  // 自由弹奏模式下的活跃音符集合
+  const freePlayActiveSet = useMemo(
+    () => new Set(freePlayActiveNotes ?? []),
+    [freePlayActiveNotes],
+  );
+
   return (
     <div className="virtual-keyboard">
       <p className="virtual-keyboard__label">🎹 虚拟键盘（无 MIDI 设备时可使用）</p>
@@ -86,11 +95,13 @@ export function VirtualKeyboard({
             const isPlayed = playedMidis.has(midi);
             const isWrong = wrongNote === midi;
             const isPressed = pressedNote === midi;
+            const isFreePlayActive = freePlayActiveSet.has(midi);
             let className = 'key key--white';
             if (isTarget) className += ' key--target';
             if (isPlayed) className += ' key--played';
             if (isWrong) className += ' key--wrong';
-            if (isPressed && !isWrong) className += ' key--pressed';
+            if (isFreePlayActive) className += ' key--freeplay-active';
+            else if (isPressed && !isWrong) className += ' key--pressed';
 
             return (
               <button
@@ -114,6 +125,7 @@ export function VirtualKeyboard({
             const isPlayed = playedMidis.has(midi);
             const isWrong = wrongNote === midi;
             const isPressed = pressedNote === midi;
+            const isFreePlayActive = freePlayActiveSet.has(midi);
 
             // 计算黑键的水平位置
             const prevWhiteIndex = whiteKeys.findIndex((w) => w > midi);
@@ -124,7 +136,8 @@ export function VirtualKeyboard({
             if (isTarget) className += ' key--target';
             if (isPlayed) className += ' key--played';
             if (isWrong) className += ' key--wrong';
-            if (isPressed && !isWrong) className += ' key--pressed';
+            if (isFreePlayActive) className += ' key--freeplay-active';
+            else if (isPressed && !isWrong) className += ' key--pressed';
 
             return (
               <button

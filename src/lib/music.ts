@@ -5,7 +5,7 @@
  * 以及随机音符生成、和弦生成、谱号音域判定等逻辑。
  */
 
-import type { NoteInfo, NoteLetter, AccidentalType, ClefType, ChordInfo, ChordSize, DifficultyLevel } from '../types';
+import type { NoteInfo, NoteLetter, AccidentalType, ClefType, ChordInfo, ChordSize, DifficultyLevel, IdentifiedChord } from '../types';
 
 /** 12 个半音对应的音名（升号体系） */
 const SHARP_NAMES: NoteLetter[] = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
@@ -413,4 +413,185 @@ export function getNoteHint(note: NoteInfo, level: number): string {
     default:
       return '';
   }
+}
+
+// ============================================
+// 和弦识别（自由弹奏模式）
+// ============================================
+
+/** 和弦识别用模式定义（按优先级排序，更具体的先匹配） */
+const CHORD_PATTERNS: { type: string; name: string; intervals: number[] }[] = [
+  // 七和弦（4 音符）
+  { type: 'dim7', name: '减七和弦', intervals: [0, 3, 6, 9] },
+  { type: 'm7b5', name: '半减七和弦', intervals: [0, 3, 6, 10] },
+  { type: 'dom7', name: '属七和弦', intervals: [0, 4, 7, 10] },
+  { type: 'maj7', name: '大七和弦', intervals: [0, 4, 7, 11] },
+  { type: 'min7', name: '小七和弦', intervals: [0, 3, 7, 10] },
+  { type: 'minMaj7', name: '小大七和弦', intervals: [0, 3, 7, 11] },
+  { type: 'augMaj7', name: '增大七和弦', intervals: [0, 4, 8, 11] },
+  { type: 'aug7', name: '增七和弦', intervals: [0, 4, 8, 10] },
+  // 三和弦（3 音符）
+  { type: 'major', name: '大三和弦', intervals: [0, 4, 7] },
+  { type: 'minor', name: '小三和弦', intervals: [0, 3, 7] },
+  { type: 'dim', name: '减三和弦', intervals: [0, 3, 6] },
+  { type: 'aug', name: '增三和弦', intervals: [0, 4, 8] },
+  { type: 'sus4', name: '挂四和弦', intervals: [0, 5, 7] },
+  { type: 'sus2', name: '挂二和弦', intervals: [0, 2, 7] },
+];
+
+/** 音程名称映射（2 音符时使用） */
+const INTERVAL_NAMES: Record<number, string> = {
+  1: '小二度', 2: '大二度', 3: '小三度', 4: '大三度',
+  5: '纯四度', 6: '增四度（三全音）', 7: '纯五度', 8: '小六度',
+  9: '大六度', 10: '小七度', 11: '大七度',
+};
+
+/**
+ * 识别当前按下的音符组成的和弦或音程。
+ *
+ * 支持识别：
+ * - 单音：返回音名
+ * - 2 音符：音程（大三度、纯五度等）
+ * - 3 音符：三和弦（大、小、减、增、挂二、挂四）+ 转位
+ * - 4 音符：七和弦（属七、大七、小七等）+ 转位
+ * - 5+ 音符：尝试匹配扩展和弦，无法识别则列出所有音名
+ *
+ * 转位判定基于最低音（贝斯音）在和弦中的音级位置：
+ * - 根音在最低 → 原位
+ * - 三音在最低 → 第一转位
+ * - 五音在最低 → 第二转位
+ * - 七音在最低 → 第三转位
+ *
+ * @param midiNotes 当前按下的 MIDI 音高数组
+ * @returns 识别结果，若无音符返回 null
+ */
+export function identifyChord(midiNotes: number[]): IdentifiedChord | null {
+  if (midiNotes.length === 0) return null;
+
+  // 去重并按音高排序
+  const sorted = [...new Set(midiNotes)].sort((a, b) => a - b);
+  const notes = sorted.map((m) => midiToNoteInfo(m));
+
+  // 提取唯一音级（pitch class，0-11）
+  const pitchClasses = [...new Set(sorted.map((m) => ((m % 12) + 12) % 12))];
+
+  // —— 单音 ——
+  if (pitchClasses.length === 1) {
+    return {
+      notes,
+      root: notes[0],
+      chordName: notes[0].name,
+      chordTypeName: '',
+      chordType: 'single',
+      inversion: 0,
+      inversionName: '',
+      bassNote: notes[0],
+      intervalName: '',
+    };
+  }
+
+  // —— 2 音符：音程 ——
+  if (pitchClasses.length === 2) {
+    const lowPc = pitchClasses[0];
+    const highPc = pitchClasses[1];
+    const interval = (highPc - lowPc + 12) % 12;
+    const intervalName = INTERVAL_NAMES[interval] ?? `${interval} 个半音`;
+
+    return {
+      notes,
+      root: notes[0],
+      chordName: `${notes[0].name}–${notes[1].name} ${intervalName}`,
+      chordTypeName: intervalName,
+      chordType: 'interval',
+      inversion: 0,
+      inversionName: '',
+      bassNote: notes[0],
+      intervalName,
+    };
+  }
+
+  // —— 3+ 音符：和弦识别 ——
+  const bassPc = ((sorted[0] % 12) + 12) % 12;
+
+  // 遍历每个音级作为候选根音
+  for (const rootPc of pitchClasses) {
+    // 计算从候选根音到其他所有音级的半音间隔
+    const intervalsFromRoot = pitchClasses
+      .filter((pc) => pc !== rootPc)
+      .map((pc) => ((pc - rootPc) % 12 + 12) % 12)
+      .sort((a, b) => a - b);
+
+    const allIntervals = [0, ...intervalsFromRoot];
+
+    // 尝试匹配和弦模式
+    for (const pattern of CHORD_PATTERNS) {
+      if (allIntervals.length !== pattern.intervals.length) continue;
+
+      const matches = pattern.intervals.every(
+        (interval, i) => interval === allIntervals[i],
+      );
+      if (!matches) continue;
+
+      // 匹配成功！找到根音对应的 NoteInfo
+      const rootMidi = sorted.find(
+        (m) => ((m % 12) + 12) % 12 === rootPc,
+      )!;
+      const rootNote = midiToNoteInfo(rootMidi);
+
+      // 判定转位：最低音在和弦中的哪个音级
+      const bassInterval = ((bassPc - rootPc) % 12 + 12) % 12;
+      const inversionIndex = pattern.intervals.indexOf(bassInterval);
+
+      let inversion = 0;
+      let inversionName = '原位';
+
+      if (inversionIndex === 0) {
+        inversion = 0;
+        inversionName = '原位';
+      } else if (inversionIndex === 1) {
+        inversion = 1;
+        inversionName = '第一转位';
+      } else if (inversionIndex === 2) {
+        inversion = 2;
+        inversionName = '第二转位';
+      } else if (inversionIndex === 3) {
+        inversion = 3;
+        inversionName = '第三转位';
+      } else {
+        // 低音不在和弦音级中（可能是八度重复等）
+        inversion = 0;
+        inversionName = '原位';
+      }
+
+      // 构建和弦名称
+      const baseName = `${rootNote.name}${pattern.name}`;
+      const fullChordName =
+        inversion > 0 ? `${baseName}（${inversionName}）` : baseName;
+
+      return {
+        notes,
+        root: rootNote,
+        chordName: fullChordName,
+        chordTypeName: pattern.name,
+        chordType: pattern.type,
+        inversion,
+        inversionName,
+        bassNote: notes[0],
+        intervalName: '',
+      };
+    }
+  }
+
+  // —— 无法识别：列出所有音名 ——
+  return {
+    notes,
+    root: null,
+    chordName: notes.map((n) => n.name).join(' · '),
+    chordTypeName: '',
+    chordType: 'unknown',
+    inversion: 0,
+    inversionName: '',
+    bassNote: notes[0],
+    intervalName: '',
+  };
 }
