@@ -18,6 +18,7 @@ interface StaffProps {
   clefMode: ClefType;
   showLabel?: boolean;
   alwaysShowLabel?: boolean;
+  flashLabel?: boolean;
   theme: ThemeMode;
 }
 
@@ -40,7 +41,7 @@ function resolveThemeColors(theme: ThemeMode): ThemeColors {
   };
 }
 
-export function Staff({ note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, theme }: StaffProps) {
+export function Staff({ note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, flashLabel, theme }: StaffProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const themeColors = useMemo(() => resolveThemeColors(theme), [theme]);
@@ -58,6 +59,7 @@ export function Staff({ note, chord, playedIndices, answerState, clefMode, showL
         answerState,
         showLabel,
         alwaysShowLabel,
+        flashLabel,
         chordName: chord?.name,
         themeColors,
       };
@@ -79,7 +81,7 @@ export function Staff({ note, chord, playedIndices, answerState, clefMode, showL
     return () => {
       resizeObserver.disconnect();
     };
-  }, [note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, themeColors]);
+  }, [note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, flashLabel, themeColors]);
 
   return (
     <div className={`staff-container staff-state--${answerState}`}>

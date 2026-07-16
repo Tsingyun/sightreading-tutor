@@ -20,7 +20,7 @@ import type {
   ClefType,
   ChordInfo,
 } from '../types';
-import { midiToNoteInfo, generateRandomNote, generateRandomChord, getDifficultyConfig } from '../lib/music';
+import { midiToNoteInfo, generateRandomNote, generateRandomChord, getDifficultyConfig, getNoteHint } from '../lib/music';
 import {
   loadStats,
   saveStats,
@@ -59,6 +59,14 @@ export interface UseTrainingReturn {
   milestoneReached: boolean;
   /** 里程碑触发的题数（如 100, 200...） */
   milestoneValue: number;
+  /** 按键后短暂闪现音名（关闭音名提示时生效） */
+  flashLabel: boolean;
+  /** 当前提示等级（0=无提示，1=线/间，2=音名字母，3=完整答案） */
+  hintLevel: number;
+  /** 当前提示文本 */
+  hintText: string;
+  /** 请求下一级提示 */
+  requestHint: () => void;
   /** 开始训练 */
   startTraining: () => void;
   /** 停止训练 */
@@ -94,6 +102,12 @@ export function useTraining(): UseTrainingReturn {
   const [wrongNote, setWrongNote] = useState<number | null>(null);
   const [milestoneReached, setMilestoneReached] = useState(false);
   const [milestoneValue, setMilestoneValue] = useState(0);
+  /** 按键后短暂闪现音名（仅当 showNoteLabel 关闭时） */
+  const [flashLabel, setFlashLabel] = useState(false);
+  /** 渐进式提示等级（0=无, 1=线/间位置, 2=音名字母, 3=完整答案） */
+  const [hintLevel, setHintLevel] = useState(0);
+  /** 提示文本 */
+  const [hintText, setHintText] = useState('');
 
   const questionStartTimeRef = useRef<number>(0);
   const lastNoteRef = useRef<number | null>(null);
@@ -104,9 +118,35 @@ export function useTraining(): UseTrainingReturn {
   const lastMilestoneRef = useRef<number>(0);
   /** 错误音提示的定时器 */
   const wrongNoteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** 音名闪现的定时器 */
+  const flashLabelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** 触发音名闪现（仅当 showNoteLabel 关闭时） */
+  const triggerFlashLabel = useCallback(() => {
+    if (config.showNoteLabel) return; // 开启音名提示时不需要闪现
+    // 清除之前的定时器
+    if (flashLabelTimerRef.current) {
+      clearTimeout(flashLabelTimerRef.current);
+    }
+    setFlashLabel(true);
+    flashLabelTimerRef.current = setTimeout(() => {
+      setFlashLabel(false);
+      flashLabelTimerRef.current = null;
+    }, 1500);
+  }, [config.showNoteLabel]);
 
   /** 生成下一题 */
   const nextQuestion = useCallback(() => {
+    // 清除音名闪现
+    setFlashLabel(false);
+    if (flashLabelTimerRef.current) {
+      clearTimeout(flashLabelTimerRef.current);
+      flashLabelTimerRef.current = null;
+    }
+    // 重置提示
+    setHintLevel(0);
+    setHintText('');
+
     if (config.mode === 'chord') {
       // —— 和弦模式 ——
       const chord = generateRandomChord(
@@ -210,6 +250,8 @@ export function useTraining(): UseTrainingReturn {
             clearTimeout(wrongNoteTimerRef.current);
             wrongNoteTimerRef.current = null;
           }
+          // 按键后闪现音名
+          triggerFlashLabel();
 
           const newPlayedIndices = [...playedIndices, noteIndex];
           setPlayedIndices(newPlayedIndices);
@@ -291,6 +333,8 @@ export function useTraining(): UseTrainingReturn {
       if (!currentNote) return;
 
       setPressedNote(midi);
+      // 按键后闪现音名（关闭音名提示时）
+      triggerFlashLabel();
       const reactionTime = performance.now() - questionStartTimeRef.current;
       const isCorrect = midi === currentNote.midi;
 
@@ -343,7 +387,7 @@ export function useTraining(): UseTrainingReturn {
         }
       }
     },
-    [currentNote, currentChord, answerState, stats, allTimeBestStreak, isTraining, config.autoNextOnError, config.mode, playedIndices, nextQuestion, checkMilestone],
+    [currentNote, currentChord, answerState, stats, allTimeBestStreak, isTraining, config.autoNextOnError, config.mode, playedIndices, nextQuestion, checkMilestone, triggerFlashLabel],
   );
 
   /** 重试当前题：重置为待答状态，不改变统计 */
@@ -351,6 +395,9 @@ export function useTraining(): UseTrainingReturn {
     if (answerState !== 'wrong') return;
     setAnswerState('pending');
     setPressedNote(null);
+    // 重置提示
+    setHintLevel(0);
+    setHintText('');
     // 和弦模式下重置已弹奏的音
     if (config.mode === 'chord') {
       setPlayedIndices([]);
@@ -378,6 +425,19 @@ export function useTraining(): UseTrainingReturn {
       checkMilestone(newStats.total);
     }
   }, [currentNote, currentChord, answerState, stats, config.mode, checkMilestone]);
+
+  /** 请求渐进式提示（单音模式） */
+  const requestHint = useCallback(() => {
+    if (!currentNote) return;
+    if (answerState !== 'pending' && answerState !== 'wrong') return;
+    // 已到最高提示等级，不再升级
+    if (hintLevel >= 3) return;
+
+    const nextLevel = hintLevel + 1;
+    const text = getNoteHint(currentNote, nextLevel);
+    setHintLevel(nextLevel);
+    setHintText(text);
+  }, [currentNote, answerState, hintLevel]);
 
   /** 跳过当前题 */
   const skipQuestion = useCallback(() => {
@@ -466,6 +526,9 @@ export function useTraining(): UseTrainingReturn {
       if (wrongNoteTimerRef.current) {
         clearTimeout(wrongNoteTimerRef.current);
       }
+      if (flashLabelTimerRef.current) {
+        clearTimeout(flashLabelTimerRef.current);
+      }
     };
   }, []);
 
@@ -482,6 +545,10 @@ export function useTraining(): UseTrainingReturn {
     wrongNote,
     milestoneReached,
     milestoneValue,
+    flashLabel,
+    hintLevel,
+    hintText,
+    requestHint,
     startTraining,
     stopTraining,
     submitAnswer,

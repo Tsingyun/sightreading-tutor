@@ -323,3 +323,94 @@ export const DIFFICULTY_LEVELS: DifficultyLevelConfig[] = [
 export function getDifficultyConfig(level: DifficultyLevel): DifficultyLevelConfig {
   return DIFFICULTY_LEVELS.find((l) => l.level === level) ?? DIFFICULTY_LEVELS[0];
 }
+
+// ============================================
+// 渐进式提示系统
+// ============================================
+
+/**
+ * 计算音符在五线谱上的线/间位置。
+ * 返回如 "第2线"、"第1间"、"下加一线" 等。
+ *
+ * 五线谱从下往上数：第1线、第1间、第2线、第2间、...、第5线
+ * 高音谱号：第2线 = G4，第1间 = F4，第1线 = E4，下加一间 = D4，下加一线 = C4
+ * 低音谱号：第4线 = F3，第3间 = E3，第3线 = D3，...
+ */
+export function getStaffPosition(note: NoteInfo): string {
+  const midi = note.midi;
+  const clef = note.clef;
+
+  // 高音谱号参考：E4(64) = 第1线
+  // 线间从下往上：下加一线(C4=60), 下加一间(D4=62), 第1线(E4=64), 第1间(F4=65),
+  //   第2线(G4=67), 第2间(A4=69), 第3线(B4=71), 第3间(C5=72),
+  //   第4线(D5=74), 第4间(E5=76), 第5线(F5=77), 第5间(G5=79), 上加一线(A5=81)
+  if (clef === 'treble') {
+    const positions: Record<number, string> = {
+      60: '下加一线', 61: '下加一线（升号）',
+      62: '下加一间', 63: '下加一间（升号）',
+      64: '第1线', 65: '第1间',
+      66: '第1线（升号）',
+      67: '第2线', 68: '第2线（升号）',
+      69: '第2间', 70: '第2间（升号）',
+      71: '第3线', 72: '第3间', 73: '第3间（升号）',
+      74: '第4线', 75: '第4线（升号）',
+      76: '第4间', 77: '第5线', 78: '第5线（升号）',
+      79: '第5间', 80: '第5间（升号）',
+      81: '上加一线', 82: '上加一间', 83: '上加一间（升号）',
+      84: '上加二线',
+    };
+    return positions[midi] ?? `MIDI ${midi}`;
+  }
+
+  // 低音谱号参考：G2(43) = 第1线
+  // 线间从下往上：下加二线(C2=36), 下加二间(D2=38), 下加一线(E2=40), 下加一间(F2=41),
+  //   第1线(G2=43), 第1间(A2=45), 第2线(B2=47), 第2间(C3=48),
+  //   第3线(D3=50), 第3间(E3=52), 第4线(F3=53), 第4间(G3=55),
+  //   第5线(A3=57), 第5间(B3=59), 上加一线(C4=60)
+  const positions: Record<number, string> = {
+    36: '下加二线', 37: '下加二线（升号）',
+    38: '下加二间', 39: '下加二间（升号）',
+    40: '下加一线', 41: '下加一间',
+    42: '下加一线（升号）',
+    43: '第1线', 44: '第1线（升号）',
+    45: '第1间', 46: '第1间（升号）',
+    47: '第2线', 48: '第2间', 49: '第2间（升号）',
+    50: '第3线', 51: '第3线（升号）',
+    52: '第3间', 53: '第4线', 54: '第4线（升号）',
+    55: '第4间', 56: '第4间（升号）',
+    57: '第5线', 58: '第5线（升号）',
+    59: '第5间', 60: '上加一线', 61: '上加一线（升号）',
+    62: '上加一间', 63: '上加一间（升号）',
+    64: '上加二线',
+  };
+  return positions[midi] ?? `MIDI ${midi}`;
+}
+
+/**
+ * 生成渐进式提示文本。
+ *
+ * @param note 当前音符
+ * @param level 提示等级（1=位置, 2=音名字母, 3=完整答案）
+ */
+export function getNoteHint(note: NoteInfo, level: number): string {
+  switch (level) {
+    case 1: {
+      // 第一级：告诉用户这个音在五线谱的哪个位置
+      const pos = getStaffPosition(note);
+      const clefName = note.clef === 'treble' ? '高音谱号' : '低音谱号';
+      return `💡 第1级提示：这个音在${clefName}的 ${pos} 上`;
+    }
+    case 2: {
+      // 第二级：给出音名字母（不含八度）
+      const pos = getStaffPosition(note);
+      return `💡 第2级提示：在 ${pos} 上，音名以字母 "${note.letter}" 开头`;
+    }
+    case 3: {
+      // 第三级：完整答案
+      const fullName = `${note.name}${note.octave}`;
+      return `💡 完整答案：${fullName}（在 ${getStaffPosition(note)} 上）`;
+    }
+    default:
+      return '';
+  }
+}

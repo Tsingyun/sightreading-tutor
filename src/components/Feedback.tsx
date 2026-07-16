@@ -3,6 +3,7 @@
  * ============================================
  * 显示答题反馈：正确、错误、揭示答案时的提示信息和动画。
  * 支持单音和和弦两种模式的反馈。
+ * 包含渐进式提示功能：引导初学者逐步推导答案。
  */
 
 import type { AnswerState, NoteInfo, ChordInfo, TrainingMode } from '../types';
@@ -16,9 +17,12 @@ interface FeedbackProps {
   mode: TrainingMode;
   playedIndices: number[];
   wrongNote: number | null;
+  hintLevel: number;
+  hintText: string;
   onReveal: () => void;
   onNext: () => void;
   onRetry: () => void;
+  onHint: () => void;
 }
 
 export function Feedback({
@@ -29,9 +33,12 @@ export function Feedback({
   mode,
   playedIndices,
   wrongNote,
+  hintLevel,
+  hintText,
   onReveal,
   onNext,
   onRetry,
+  onHint,
 }: FeedbackProps) {
   const hasContent = mode === 'chord' ? currentChord : currentNote;
 
@@ -66,6 +73,34 @@ export function Feedback({
       return (
         <div className="feedback feedback--pending">
           <p className="feedback-hint">请依次弹奏和弦中的所有音</p>
+        </div>
+      );
+    }
+
+    // 单音模式：显示提示内容 + 提示按钮
+    if (hasContent && answerState === 'pending') {
+      return (
+        <div className="feedback feedback--pending">
+          {hintLevel > 0 && (
+            <p className="feedback-hint-text">{hintText}</p>
+          )}
+          <div className="feedback-pending-row">
+            <p className="feedback-hint">
+              请在 MIDI 键盘上按下对应的琴键
+            </p>
+            <div className="feedback-actions">
+              <button
+                className="btn-feedback btn-feedback--hint"
+                onClick={onHint}
+                disabled={hintLevel >= 3}
+              >
+                {hintLevel === 0 ? '💡 提示' : hintLevel < 3 ? '💡 更多提示' : '💡 已无更多提示'}
+              </button>
+              <button className="btn-feedback" onClick={onReveal}>
+                查看答案
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
@@ -107,10 +142,22 @@ export function Feedback({
         <p className="feedback-text">
           不对！你按的是 <strong>{pressedName}</strong>
         </p>
+        {hintLevel > 0 && (
+          <p className="feedback-hint-text">{hintText}</p>
+        )}
         <div className="feedback-actions">
           <button className="btn-feedback" onClick={onRetry}>
             再试一次
           </button>
+          {mode === 'single' && (
+            <button
+              className="btn-feedback btn-feedback--hint"
+              onClick={onHint}
+              disabled={hintLevel >= 3}
+            >
+              {hintLevel === 0 ? '💡 提示' : hintLevel < 3 ? '💡 更多提示' : '💡 已无更多提示'}
+            </button>
+          )}
           <button className="btn-feedback btn-feedback--primary" onClick={onReveal}>
             查看答案
           </button>

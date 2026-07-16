@@ -355,6 +355,33 @@
   color: var(--text-secondary);
 }
 
+/* 渐进式提示文本 */
+.feedback-hint-text {
+  font-size: 0.9375rem;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--accent-light);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+  animation: hint-fade-in 0.3s ease-out;
+}
+
+@keyframes hint-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* pending 状态下的行布局（提示文字 + 按钮在同一行） */
+.feedback-pending-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .feedback--correct {
   background-color: var(--success-light);
   animation: feedback-pop 0.4s ease-out;
@@ -429,6 +456,24 @@
 
 .btn-feedback--primary:hover {
   filter: brightness(1.05);
+}
+
+/* 提示按钮（区别于普通按钮） */
+.btn-feedback--hint {
+  background-color: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-weight: 600;
+}
+
+.btn-feedback--hint:hover:not(:disabled) {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.btn-feedback--hint:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ========== Sidebar ========== */
@@ -858,7 +903,8 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
 }
 
 .key:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translateY(2px) scale(0.98);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .key:disabled {
@@ -908,10 +954,19 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
 .key--played {
   background: linear-gradient(to bottom, #86efac 0%, #22c55e 100%) !important;
   color: #fff !important;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.5), inset 0 1px 4px rgba(0, 0, 0, 0.1);
+  animation: key-played-pulse 0.4s ease-out;
+}
+
+@keyframes key-played-pulse {
+  0% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(3px) scale(0.95); box-shadow: 0 0 24px rgba(34, 197, 94, 0.7); }
+  100% { transform: translateY(0) scale(1); }
 }
 
 [data-theme='dark'] .key--played {
   background: linear-gradient(to bottom, #4ade80 0%, #16a34a 100%) !important;
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.5), inset 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* 目标音（揭示/正确时高亮） */
@@ -928,6 +983,16 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
 .key--wrong {
   background: linear-gradient(to bottom, #fca5a5 0%, #ef4444 100%) !important;
   color: #fff !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.5), inset 0 1px 4px rgba(0, 0, 0, 0.1);
+  animation: key-wrong-shake 0.4s ease-out;
+}
+
+@keyframes key-wrong-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
 }
 
 .key-label {

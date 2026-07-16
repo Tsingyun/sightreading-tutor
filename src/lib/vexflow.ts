@@ -44,6 +44,8 @@ export interface RenderOptions {
   showLabel?: boolean;
   /** 是否始终显示音名（学习模式，pending 状态下也显示） */
   alwaysShowLabel?: boolean;
+  /** 按键后短暂闪现音名（关闭 alwaysShowLabel 时生效） */
+  flashLabel?: boolean;
   /** 和弦名称（和弦完成时显示） */
   chordName?: string;
   /** 主题颜色配置 */
@@ -207,8 +209,10 @@ export function renderStaff(options: RenderOptions): void {
     applyNoteColors(container, playedIndices, answerState, themeColors);
   }
 
-  // 显示标签（揭示答案、学习模式、或和弦完成时）
-  const shouldShowLabel = options.showLabel || (options.alwaysShowLabel && answerState !== 'wrong' && answerState !== 'idle');
+  // 显示标签（揭示答案、学习模式、闪现、或和弦完成时）
+  const shouldShowLabel = options.showLabel
+    || (options.alwaysShowLabel && answerState !== 'wrong' && answerState !== 'idle')
+    || (options.flashLabel && answerState === 'pending');
   if (shouldShowLabel && renderNotes.length === 1) {
     const noteStartX = stave.getNoteStartX();
     const noteEndX = stave.getNoteEndX();
@@ -333,7 +337,9 @@ export function renderGrandStaff(options: RenderOptions): void {
     applyNoteColors(container, playedIndices, answerState, themeColors);
   }
 
-  const shouldShowLabelGrand = options.showLabel || (options.alwaysShowLabel && answerState !== 'wrong' && answerState !== 'idle');
+  const shouldShowLabelGrand = options.showLabel
+    || (options.alwaysShowLabel && answerState !== 'wrong' && answerState !== 'idle')
+    || (options.flashLabel && answerState === 'pending');
   if (shouldShowLabelGrand && renderNotes.length === 1) {
     const centerX = staveX + staveWidth / 2;
     const labelY = firstClef === 'treble' ? 45 : 140;

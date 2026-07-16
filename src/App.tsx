@@ -85,6 +85,7 @@ function App() {
               clefMode={training.config.clef}
               showLabel={training.answerState === 'revealed'}
               alwaysShowLabel={training.config.showNoteLabel}
+              flashLabel={training.flashLabel}
               theme={theme}
             />
           </div>
@@ -97,9 +98,12 @@ function App() {
             mode={training.config.mode}
             playedIndices={training.playedIndices}
             wrongNote={training.wrongNote}
+            hintLevel={training.hintLevel}
+            hintText={training.hintText}
             onReveal={training.revealAnswer}
             onNext={training.nextQuestion}
             onRetry={training.retry}
+            onHint={training.requestHint}
           />
 
           <div className="practice-controls">
