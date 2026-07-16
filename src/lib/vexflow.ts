@@ -212,12 +212,12 @@ export function renderStaff(options: RenderOptions): void {
   // 显示标签（揭示答案、学习模式、闪现、或和弦完成时）
   const shouldShowLabel = options.showLabel
     || (options.alwaysShowLabel && answerState !== 'wrong' && answerState !== 'idle')
-    || (options.flashLabel && answerState === 'pending');
+    || (options.flashLabel && !options.alwaysShowLabel);
   if (shouldShowLabel && renderNotes.length === 1) {
     const noteStartX = stave.getNoteStartX();
     const noteEndX = stave.getNoteEndX();
     const centerX = (noteStartX + noteEndX) / 2;
-    const labelColor = answerState === 'pending' ? themeColors.noteDefault : themeColors.noteCorrect;
+    const labelColor = (answerState === 'pending' || options.flashLabel) ? themeColors.noteDefault : themeColors.noteCorrect;
     drawNoteLabel(context, renderNotes[0], centerX, staveY, labelColor);
   }
 
@@ -339,11 +339,11 @@ export function renderGrandStaff(options: RenderOptions): void {
 
   const shouldShowLabelGrand = options.showLabel
     || (options.alwaysShowLabel && answerState !== 'wrong' && answerState !== 'idle')
-    || (options.flashLabel && answerState === 'pending');
+    || (options.flashLabel && !options.alwaysShowLabel);
   if (shouldShowLabelGrand && renderNotes.length === 1) {
     const centerX = staveX + staveWidth / 2;
     const labelY = firstClef === 'treble' ? 45 : 140;
-    const labelColor = answerState === 'pending' ? themeColors.noteDefault : themeColors.noteCorrect;
+    const labelColor = (answerState === 'pending' || options.flashLabel) ? themeColors.noteDefault : themeColors.noteCorrect;
     drawNoteLabel(context, renderNotes[0], centerX, labelY, labelColor);
   }
 

@@ -32,6 +32,7 @@ export function VirtualKeyboard({
   currentNote,
   currentChord,
   answerState,
+  pressedNote,
   playedIndices,
   wrongNote,
   mode,
@@ -84,10 +85,12 @@ export function VirtualKeyboard({
             const isTarget = showTarget && chordMidis.has(midi);
             const isPlayed = playedMidis.has(midi);
             const isWrong = wrongNote === midi;
+            const isPressed = pressedNote === midi;
             let className = 'key key--white';
             if (isTarget) className += ' key--target';
             if (isPlayed) className += ' key--played';
             if (isWrong) className += ' key--wrong';
+            if (isPressed && !isWrong) className += ' key--pressed';
 
             return (
               <button
@@ -110,6 +113,7 @@ export function VirtualKeyboard({
             const isTarget = showTarget && chordMidis.has(midi);
             const isPlayed = playedMidis.has(midi);
             const isWrong = wrongNote === midi;
+            const isPressed = pressedNote === midi;
 
             // 计算黑键的水平位置
             const prevWhiteIndex = whiteKeys.findIndex((w) => w > midi);
@@ -120,6 +124,7 @@ export function VirtualKeyboard({
             if (isTarget) className += ' key--target';
             if (isPlayed) className += ' key--played';
             if (isWrong) className += ' key--wrong';
+            if (isPressed && !isWrong) className += ' key--pressed';
 
             return (
               <button
