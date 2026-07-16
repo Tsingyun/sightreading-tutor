@@ -1,5 +1,12 @@
 /* ============================================
    全局样式 & 主题变量
+   ============================================
+   设计语言：Anthropic 风格
+   - 暖象牙画布 (#faf9f5)，绝不用纯白做底色
+   - 珊瑚强调色 (#d97757)，克制使用
+   - 全程暖灰，禁用冷蓝灰
+   - 扁平硬边，环形阴影代替边框
+   - 衬线标题 + 无衬线正文
    ============================================ */
 
 /* ========== Noto Music 字体（本地嵌入） ========== */
@@ -23,88 +30,114 @@
 /* ========== 浅色主题（默认） ========== */
 :root,
 [data-theme='light'] {
-  --bg-color: #f8f9fc;
-  --bg-elevated: #ffffff;
-  --bg-card: #ffffff;
-  --bg-hover: #f1f3f9;
-  --bg-input: #f8f9fc;
+  /* 画布与表面 */
+  --bg-color: #faf9f5;        /* 暖象牙画布 */
+  --bg-elevated: #f5f4ed;     /* 羊皮纸，次级暖底 */
+  --bg-card: #ffffff;          /* 纯白卡片 */
+  --bg-hover: #f0eee6;        /* 暖沙悬停 */
+  --bg-input: #f5f4ed;        /* 输入框底 */
 
-  --text-primary: #1a1a2e;
-  --text-secondary: #6b7280;
-  --text-tertiary: #9ca3af;
-  --text-inverse: #ffffff;
+  /* 文本 */
+  --text-primary: #141413;    /* 墨黑 */
+  --text-secondary: #6c6a64;  /* 暖灰 */
+  --text-tertiary: #8e8b82;   /* 浅暖灰 */
+  --text-inverse: #faf9f5;    /* 深色表面上的文字 */
 
-  --border-color: #e5e7eb;
-  --border-focus: #6366f1;
+  /* 边框 */
+  --border-color: #e6dfd8;    /* 暖色细边框 */
+  --border-focus: #d97757;    /* 珊瑚聚焦 */
 
-  --accent: #6366f1;
-  --accent-hover: #5558e3;
-  --accent-light: #eef0ff;
+  /* 强调色 */
+  --accent: #d97757;          /* 珊瑚 */
+  --accent-hover: #c96442;    /* 陶土深色 */
+  --accent-light: #fdf0eb;    /* 极淡珊瑚 */
   --accent-foreground: #ffffff;
 
-  --success: #22c55e;
-  --success-light: #dcfce7;
-  --error: #ef4444;
-  --error-light: #fee2e2;
-  --warning: #f59e0b;
+  /* 语义色 */
+  --success: #5db872;
+  --success-light: #e8f5ec;
+  --error: #c64545;
+  --error-light: #fbeaea;
+  --warning: #d4a017;
 
-  --note-default: #1a1a2e;
-  --note-correct: #22c55e;
-  --note-wrong: #ef4444;
+  /* 音符色 */
+  --note-default: #141413;
+  --note-correct: #5db872;
+  --note-wrong: #c64545;
 
-  --staff-color: #374151;
+  /* 谱表色 */
+  --staff-color: #3d3d3a;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.1);
+  /* 阴影 — 极轻，以环形阴影为主 */
+  --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.04);
+  --shadow-md: 0 2px 8px rgba(20, 20, 19, 0.06);
+  --shadow-lg: 0 4px 24px rgba(20, 20, 19, 0.08);
+  --shadow-xl: 0 8px 48px rgba(20, 20, 19, 0.1);
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* 环形阴影（Anthropic 招牌手法） */
+  --ring: 0 0 0 1px var(--border-color);
+  --ring-accent: 0 0 0 1px var(--accent);
 
-  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* 过渡 */
+  --transition: 150ms ease;
+  --transition-slow: 300ms ease;
+
+  /* 字体 */
+  --font-display: Georgia, 'Noto Serif SC', 'Songti SC', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 /* ========== 深色主题 ========== */
 [data-theme='dark'] {
-  --bg-color: #0f0f1e;
-  --bg-elevated: #1a1a2e;
-  --bg-card: #16162a;
-  --bg-hover: #222240;
-  --bg-input: #1e1e36;
+  --bg-color: #181715;        /* 深墨 */
+  --bg-elevated: #252320;     /* 抬升深面板 */
+  --bg-card: #1f1e1b;         /* 卡片底 */
+  --bg-hover: #2a2925;        /* 悬停 */
+  --bg-input: #252320;        /* 输入框 */
 
-  --text-primary: #f1f3f9;
-  --text-secondary: #9ca3af;
-  --text-tertiary: #6b7280;
-  --text-inverse: #1a1a2e;
+  --text-primary: #faf9f5;    /* 暖白 */
+  --text-secondary: #a09d96;  /* 暖灰 */
+  --text-tertiary: #6c6a64;   /* 深暖灰 */
+  --text-inverse: #141413;
 
-  --border-color: #2a2a45;
-  --border-focus: #818cf8;
+  --border-color: #3a3833;    /* 深暖边框 */
+  --border-focus: #d97757;
 
-  --accent: #818cf8;
-  --accent-hover: #6366f1;
-  --accent-light: #1e1e3f;
+  --accent: #d97757;
+  --accent-hover: #e08868;
+  --accent-light: #2a1f1a;
   --accent-foreground: #ffffff;
 
-  --success: #4ade80;
-  --success-light: #1a3a2a;
-  --error: #f87171;
-  --error-light: #3a1a1a;
-  --warning: #fbbf24;
+  --success: #7dba8a;
+  --success-light: #1a2e22;
+  --error: #e08080;
+  --error-light: #2e1a1a;
+  --warning: #e8b450;
 
-  --note-default: #e0e0e0;
-  --note-correct: #4ade80;
-  --note-wrong: #f87171;
+  --note-default: #e8e4dc;
+  --note-correct: #7dba8a;
+  --note-wrong: #e08080;
 
-  --staff-color: #e0e0e0;
+  --staff-color: #a09d96;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 8px 48px rgba(0, 0, 0, 0.6);
+
+  --ring: 0 0 0 1px var(--border-color);
+  --ring-accent: 0 0 0 1px var(--accent);
+
+  --font-display: Georgia, 'Noto Serif SC', 'Songti SC', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 /* ========== 基础元素 ========== */
@@ -115,12 +148,12 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC',
-    'Microsoft YaHei', sans-serif;
+  font-family: var(--font-body);
   background-color: var(--bg-color);
   color: var(--text-primary);
-  transition: background-color var(--transition), color var(--transition);
+  transition: background-color var(--transition-slow), color var(--transition-slow);
   min-height: 100vh;
+  line-height: 1.6;
 }
 
 button {

@@ -9,16 +9,10 @@
  * - 识别并显示和弦名称和转位信息
  * - 支持虚拟键盘点击输入（点击切换按下/松开）
  *
- * 布局：
- * ┌──────────────────────────────────────┐
- * │         Staff（五线谱渲染区域）         │
- * ├──────────────────────────────────────┤
- * │     ChordDisplay（和弦名称+转位）      │
- * ├──────────────────────────────────────┤
- * │     NoteBadges（音名标签卡片）         │
- * ├──────────────────────────────────────┤
- * │     VirtualKeyboard（虚拟键盘）        │
- * └──────────────────────────────────────┘
+ * 防闪烁设计：
+ * - 五线谱始终渲染（无音符时渲染空谱表），避免组件挂载/卸载
+ * - 信息区域始终保留空间，用 opacity + visibility 过渡代替条件渲染
+ * - 布局尺寸恒定，不随音符变化而跳动
  */
 
 import { useMemo } from 'react';
@@ -72,63 +66,54 @@ export function FreePlay({
 
   return (
     <div className="freeplay">
-      {/* 五线谱区域 */}
-      <div className="staff-wrapper">
-        {hasNotes ? (
-          <Staff
-            note={null}
-            chord={chordForStaff}
-            playedIndices={[]}
-            answerState="revealed"
-            clefMode="both"
-            theme={theme}
-          />
-        ) : (
-          <div className="freeplay-placeholder">
-            <div className="freeplay-placeholder__icon">🎹</div>
-            <p className="freeplay-placeholder__text">
-              弹奏 MIDI 键盘或点击下方虚拟键盘
-            </p>
-            <p className="freeplay-placeholder__sub">
-              音符将实时显示在五线谱上，并自动识别和弦与转位
-            </p>
-          </div>
-        )}
+      {/* 五线谱区域 — 始终渲染，无音符时显示空谱表 */}
+      <div className="staff-wrapper freeplay-staff-wrapper">
+        <Staff
+          note={null}
+          chord={chordForStaff}
+          playedIndices={[]}
+          answerState="revealed"
+          clefMode="both"
+          theme={theme}
+        />
+        {/* 无音符时的提示覆盖层（不影响布局，绝对定位） */}
+        <div className={`freeplay-hint-overlay ${hasNotes ? 'freeplay-hint-overlay--hidden' : ''}`}>
+          <div className="freeplay-hint-overlay__icon">♪</div>
+          <p className="freeplay-hint-overlay__text">弹奏 MIDI 键盘或点击下方虚拟键盘</p>
+        </div>
       </div>
 
-      {/* 和弦信息 + 音名标签 */}
-      {hasNotes && (
-        <div className="freeplay-info">
-          {/* 和弦名称展示 */}
-          {chordInfo && chordCategory !== 'unknown' && (
-            <div className={`freeplay-chord freeplay-chord--${chordCategory}`}>
-              <div className="freeplay-chord__label">
-                {chordCategory === 'single' ? '音名' : chordCategory === 'interval' ? '音程' : '和弦'}
-              </div>
-              <div className="freeplay-chord__name">
-                {chordInfo.chordName}
-              </div>
-              {chordInfo.inversionName && chordInfo.inversion > 0 && (
-                <div className="freeplay-chord__inversion">
-                  {chordInfo.inversionName}
-                </div>
-              )}
-              {chordInfo.root && chordCategory === 'chord' && (
-                <div className="freeplay-chord__root">
-                  根音：{chordInfo.root.name}{chordInfo.root.octave}
-                </div>
-              )}
-              {chordInfo.bassNote && chordCategory === 'chord' && chordInfo.inversion > 0 && (
-                <div className="freeplay-chord__bass">
-                  低音：{chordInfo.bassNote.name}{chordInfo.bassNote.octave}
-                </div>
-              )}
+      {/* 和弦信息 + 音名标签 — 始终保留空间，用 opacity 过渡 */}
+      <div className={`freeplay-info ${hasNotes ? 'freeplay-info--visible' : ''}`}>
+        {/* 和弦名称展示 */}
+        <div className={`freeplay-chord freeplay-chord--${chordCategory}`}>
+          <div className="freeplay-chord__label">
+            {chordCategory === 'single' ? '音名' : chordCategory === 'interval' ? '音程' : chordCategory === 'chord' ? '和弦' : '—'}
+          </div>
+          <div className="freeplay-chord__name">
+            {chordInfo?.chordName ?? '—'}
+          </div>
+          {chordInfo?.inversionName && chordInfo.inversion > 0 && (
+            <div className="freeplay-chord__inversion">
+              {chordInfo.inversionName}
             </div>
           )}
+          {chordInfo?.root && chordCategory === 'chord' && (
+            <div className="freeplay-chord__root">
+              根音：{chordInfo.root.name}{chordInfo.root.octave}
+            </div>
+          )}
+          {chordInfo?.bassNote && chordCategory === 'chord' && chordInfo.inversion > 0 && (
+            <div className="freeplay-chord__bass">
+              低音：{chordInfo.bassNote.name}{chordInfo.bassNote.octave}
+            </div>
+          )}
+        </div>
 
-          {/* 音名标签卡片 */}
-          <div className="freeplay-notes">
-            {noteInfos.map((note, index) => (
+        {/* 音名标签卡片 */}
+        <div className="freeplay-notes">
+          {noteInfos.length > 0 ? (
+            noteInfos.map((note, index) => (
               <div
                 key={`${note.midi}-${index}`}
                 className={`freeplay-note-badge ${note.clef === 'bass' ? 'freeplay-note-badge--bass' : ''}`}
@@ -136,15 +121,21 @@ export function FreePlay({
                 <span className="freeplay-note-badge__name">{note.name}</span>
                 <span className="freeplay-note-badge__octave">{note.octave}</span>
               </div>
-            ))}
-          </div>
-
-          {/* 清除按钮 */}
-          <button className="btn-secondary freeplay-clear-btn" onClick={onClear}>
-            清除全部
-          </button>
+            ))
+          ) : (
+            <div className="freeplay-notes-empty">按下的音符将显示在这里</div>
+          )}
         </div>
-      )}
+
+        {/* 清除按钮 */}
+        <button
+          className="btn-secondary freeplay-clear-btn"
+          onClick={onClear}
+          disabled={!hasNotes}
+        >
+          清除全部
+        </button>
+      </div>
 
       {/* 虚拟键盘 */}
       <VirtualKeyboard
