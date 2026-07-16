@@ -395,6 +395,12 @@ export function useTraining(): UseTrainingReturn {
     if (answerState !== 'wrong') return;
     setAnswerState('pending');
     setPressedNote(null);
+    // 清除音名闪现（按键时可能触发了）
+    setFlashLabel(false);
+    if (flashLabelTimerRef.current) {
+      clearTimeout(flashLabelTimerRef.current);
+      flashLabelTimerRef.current = null;
+    }
     // 重置提示
     setHintLevel(0);
     setHintText('');
