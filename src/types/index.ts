@@ -5,6 +5,9 @@
 /** 谱号类型：高音谱号 / 低音谱号 / 双谱表 */
 export type ClefType = 'treble' | 'bass' | 'both';
 
+/** 调号类型 */
+export type KeySignature = 'C' | 'G' | 'D' | 'A' | 'E' | 'F' | 'Bb' | 'Eb' | 'Ab';
+
 /** 主题模式 */
 export type ThemeMode = 'light' | 'dark';
 
@@ -76,6 +79,8 @@ export interface TrainingConfig {
   difficultyLevel: DifficultyLevel;
   /** 是否显示音名提示（学习模式，在五线谱上标注音名） */
   showNoteLabel: boolean;
+  /** 调号（'C' = 无升降号，'G' = 1个升号，等） */
+  keySignature: KeySignature;
 }
 
 /** 训练统计数据 */
@@ -111,8 +116,8 @@ export interface AnswerRecord {
   timestamp: number;
 }
 
-/** 应用模式：识谱训练 / 自由弹奏 */
-export type AppMode = 'training' | 'freeplay';
+/** 应用模式：识谱训练 / 自由弹奏 / 节奏训练 / 乐曲练习 */
+export type AppMode = 'training' | 'freeplay' | 'rhythm' | 'song';
 
 /** 识别出的和弦信息（自由弹奏模式） */
 export interface IdentifiedChord {

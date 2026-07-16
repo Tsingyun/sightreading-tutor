@@ -50,6 +50,8 @@ export interface RenderOptions {
   chordName?: string;
   /** 主题颜色配置 */
   themeColors: ThemeColors;
+  /** 调号（如 'C', 'G', 'D', 'F', 'Bb' 等），不传默认 C */
+  keySignature?: string;
 }
 
 /** 根据答题状态和主题颜色获取音符颜色 */
@@ -168,6 +170,9 @@ export function renderStaff(options: RenderOptions): void {
   // 确定谱号：和弦模式取第一个音符的谱号
   const clef = notes?.[0]?.clef || note?.clef || 'treble';
   stave.addClef(clef);
+  if (options.keySignature && options.keySignature !== 'C') {
+    stave.addKeySignature(options.keySignature);
+  }
   stave.setContext(context);
   stave.setStyle({ strokeStyle: themeColors.staffColor, fillStyle: themeColors.staffColor });
   stave.draw();
@@ -283,6 +288,9 @@ export function renderGrandStaff(options: RenderOptions): void {
   // 高音谱表
   const trebleStave = new Stave(staveX, 45, staveWidth);
   trebleStave.addClef('treble');
+  if (options.keySignature && options.keySignature !== 'C') {
+    trebleStave.addKeySignature(options.keySignature);
+  }
   trebleStave.setContext(context);
   trebleStave.setStyle({ strokeStyle: themeColors.staffColor, fillStyle: themeColors.staffColor });
   trebleStave.draw();
@@ -290,6 +298,9 @@ export function renderGrandStaff(options: RenderOptions): void {
   // 低音谱表
   const bassStave = new Stave(staveX, 140, staveWidth);
   bassStave.addClef('bass');
+  if (options.keySignature && options.keySignature !== 'C') {
+    bassStave.addKeySignature(options.keySignature);
+  }
   bassStave.setContext(context);
   bassStave.setStyle({ strokeStyle: themeColors.staffColor, fillStyle: themeColors.staffColor });
   bassStave.draw();

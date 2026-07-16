@@ -6,8 +6,8 @@
  * 支持单音模式和和弦模式（可选择 2/3/4 个音符）。
  */
 
-import type { TrainingConfig, ClefType, TrainingMode, ChordSize } from '../types';
-import { RANGE_PRESETS, DIFFICULTY_LEVELS } from '../lib/music';
+import type { TrainingConfig, ClefType, TrainingMode, ChordSize, KeySignature } from '../types';
+import { RANGE_PRESETS, DIFFICULTY_LEVELS, KEY_SIGNATURES } from '../lib/music';
 import { midiToDisplayString } from '../lib/music';
 import { ClefIcon } from './ClefIcon';
 
@@ -158,8 +158,25 @@ export function SettingsPanel({ config, onUpdate }: SettingsPanelProps) {
         </div>
       </div>
 
-      {/* 升降号开关（仅单音模式显示） */}
-      {config.mode === 'single' && (
+      {/* 调号选择 */}
+      <div className="settings-group">
+        <label className="settings-label">调号</label>
+        <div className="keysig-tabs">
+          {KEY_SIGNATURES.map((ks) => (
+            <button
+              key={ks.key}
+              className={`keysig-tab ${config.keySignature === ks.key ? 'keysig-tab--active' : ''}`}
+              onClick={() => onUpdate({ keySignature: ks.key as KeySignature })}
+            >
+              {ks.name}
+            </button>
+          ))}
+        </div>
+        <p className="settings-hint">选择调号后，训练音符将在该调的自然音阶内生成</p>
+      </div>
+
+      {/* 升降号开关（仅单音模式、C 调时显示） */}
+      {config.mode === 'single' && config.keySignature === 'C' && (
         <div className="settings-group">
           <label className="settings-toggle">
             <input

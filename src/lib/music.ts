@@ -5,7 +5,7 @@
  * 以及随机音符生成、和弦生成、谱号音域判定等逻辑。
  */
 
-import type { NoteInfo, NoteLetter, AccidentalType, ClefType, ChordInfo, ChordSize, DifficultyLevel, IdentifiedChord } from '../types';
+import type { NoteInfo, NoteLetter, AccidentalType, ClefType, ChordInfo, ChordSize, DifficultyLevel, IdentifiedChord, KeySignature } from '../types';
 
 /** 12 个半音对应的音名（升号体系） */
 const SHARP_NAMES: NoteLetter[] = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
@@ -253,6 +253,104 @@ export const RANGE_PRESETS: { label: string; clef: ClefType; low: number; high: 
 export function midiToDisplayString(midi: number, preferFlat = false): string {
   const info = midiToNoteInfo(midi, preferFlat);
   return `${info.name}${info.octave}`;
+}
+
+// ============================================
+// 调号系统
+// ============================================
+
+/** 调号配置 */
+export interface KeySignatureConfig {
+  /** 调号标识 */
+  key: KeySignature;
+  /** 中文名称 */
+  name: string;
+  /** VexFlow 格式的调号 */
+  vexKey: string;
+  /** 升号数量（正数）或降号数量（负数） */
+  accidentals: number;
+  /** 该调号下需要升/降的音级（0-11 pitch class） */
+  alteredPitches: number[];
+}
+
+/** 全部调号定义 */
+export const KEY_SIGNATURES: KeySignatureConfig[] = [
+  { key: 'C', name: 'C 大调', vexKey: 'C', accidentals: 0, alteredPitches: [] },
+  { key: 'G', name: 'G 大调', vexKey: 'G', accidentals: 1, alteredPitches: [6] },      // F#
+  { key: 'D', name: 'D 大调', vexKey: 'D', accidentals: 2, alteredPitches: [6, 1] },    // F#, C#
+  { key: 'A', name: 'A 大调', vexKey: 'A', accidentals: 3, alteredPitches: [6, 1, 8] }, // F#, C#, G#
+  { key: 'E', name: 'E 大调', vexKey: 'E', accidentals: 4, alteredPitches: [6, 1, 8, 3] }, // F#, C#, G#, D#
+  { key: 'F', name: 'F 大调', vexKey: 'F', accidentals: -1, alteredPitches: [10] },     // Bb
+  { key: 'Bb', name: '♭B 大调', vexKey: 'Bb', accidentals: -2, alteredPitches: [10, 3] }, // Bb, Eb
+  { key: 'Eb', name: '♭E 大调', vexKey: 'Eb', accidentals: -3, alteredPitches: [10, 3, 8] }, // Bb, Eb, Ab
+  { key: 'Ab', name: '♭A 大调', vexKey: 'Ab', accidentals: -4, alteredPitches: [10, 3, 8, 1] }, // Bb, Eb, Ab, Db
+];
+
+/** 获取调号配置 */
+export function getKeySignatureConfig(key: KeySignature): KeySignatureConfig {
+  return KEY_SIGNATURES.find((k) => k.key === key) ?? KEY_SIGNATURES[0];
+}
+
+/**
+ * 检查 MIDI 音高是否在指定调号的自然音阶内。
+ * 即：该音的 pitch class 不在 alteredPitches 中（不需要升降号），
+ * 或者该音本身就是调号要求的升降音。
+ */
+export function isInKeySignature(_midi: number, key: KeySignature): boolean {
+  if (key === 'C') return true; // C 大调无升降号
+  // 调号下的所有音都允许，包括升/降音
+  return true;
+}
+
+/**
+ * 在指定调号下生成随机音符。
+ * 优先生成调内音（自然音阶上的音）。
+ */
+export function generateRandomNoteInKey(
+  range: { low: number; high: number },
+  key: KeySignature,
+  lastMidi: number | null,
+): number {
+  const config = getKeySignatureConfig(key);
+  
+  // 构建候选列表：只包含调内音
+  const candidates: number[] = [];
+  for (let midi = range.low; midi <= range.high; midi++) {
+    const pitchClass = ((midi % 12) + 12) % 12;
+    const info = midiToNoteInfo(midi);
+    
+    // 判断该音是否在调内：
+    // 1. pitch class 不在 alteredPitches 中 → 自然音，在调内
+    // 2. pitch class 在 alteredPitches 中 → 需要看是否为升号或降号体系下的调内音
+    const isAltered = config.alteredPitches.includes(pitchClass);
+    
+    if (config.accidentals > 0) {
+      // 升号调：alteredPitches 中的音用升号，其他自然音也在调内
+      // 只筛选白键 + 升号键（跳过降号音）
+      if (info.accidental === 'b') continue;
+      // 如果是升号调中的升降音，需要确保它确实是该调的升号音
+      if (isAltered && info.accidental !== '#') {
+        // 这个 pitch class 应该是升号但当前 MIDI 映射到的不是升号 → 跳过
+        // 例如 G 大调中 F#（pitch class 6），midiToNoteInfo(66) = F#，这没问题
+        continue;
+      }
+    } else if (config.accidentals < 0) {
+      // 降号调
+      if (info.accidental === '#') continue;
+      if (isAltered && info.accidental !== 'b') continue;
+    }
+    
+    candidates.push(midi);
+  }
+
+  if (candidates.length === 0) return generateRandomNote(range, true, lastMidi);
+
+  let pool = candidates;
+  if (lastMidi !== null && candidates.length > 1) {
+    pool = candidates.filter((m) => m !== lastMidi);
+  }
+
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 // ============================================

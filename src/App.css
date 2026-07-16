@@ -1742,3 +1742,828 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
     padding: 0.5rem 0.5rem;
   }
 }
+
+/* ============================================
+   调号选择器 — Newsprint 风格
+   ============================================ */
+.keysig-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--fg);
+}
+
+.keysig-tab {
+  flex: 1;
+  min-width: 60px;
+  padding: 0.375rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border-muted);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.keysig-tab:last-child { border-right: none; }
+
+.keysig-tab:hover {
+  background: var(--neutral-100);
+}
+
+.keysig-tab--active {
+  background: var(--fg);
+  color: var(--fg-inverse);
+}
+
+/* ============================================
+   节奏训练 — Newsprint 风格
+   ============================================ */
+.rhythm-trainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+}
+
+.rhythm-trainer__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 4px solid var(--fg);
+  padding-bottom: 0.5rem;
+}
+
+.rhythm-trainer__title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--fg);
+  margin: 0;
+}
+
+.rhythm-trainer__subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+}
+
+/* 控制区 */
+.rhythm-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rhythm-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rhythm-control__label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+  white-space: nowrap;
+  min-width: 40px;
+}
+
+/* BPM 滑块 */
+.rhythm-bpm-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.rhythm-bpm-slider {
+  flex: 1;
+  min-width: 120px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--fg);
+  outline: none;
+  border-radius: 0;
+}
+
+.rhythm-bpm-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 24px;
+  background: var(--fg);
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.rhythm-bpm-slider::-moz-range-thumb {
+  width: 16px;
+  height: 24px;
+  background: var(--fg);
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+}
+
+.rhythm-bpm-value {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fg);
+  min-width: 50px;
+  text-align: right;
+}
+
+/* 拍号 / 模式按钮组 */
+.rhythm-timesig-group,
+.rhythm-mode-group {
+  display: flex;
+  border: 1px solid var(--fg);
+  flex: 1;
+}
+
+.rhythm-timesig-btn,
+.rhythm-mode-btn {
+  flex: 1;
+  padding: 0.375rem 0.625rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.rhythm-timesig-btn:last-child,
+.rhythm-mode-btn:last-child { border-right: none; }
+
+.rhythm-timesig-btn:hover,
+.rhythm-mode-btn:hover {
+  background: var(--neutral-100);
+}
+
+.rhythm-timesig-btn--active,
+.rhythm-mode-btn--active {
+  background: var(--fg);
+  color: var(--fg-inverse);
+}
+
+/* 节拍器指示灯 */
+.rhythm-metronome {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.75rem;
+  border: 1px solid var(--fg);
+  background: var(--neutral-100);
+}
+
+.rhythm-beat-dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--fg);
+  background: var(--bg);
+  transition: background 0.05s, transform 0.05s;
+}
+
+.rhythm-beat-dot--downbeat {
+  width: 20px;
+  height: 20px;
+}
+
+.rhythm-beat-dot--active {
+  background: var(--accent);
+  transform: scale(1.15);
+}
+
+/* 节奏型可视化 */
+.rhythm-pattern {
+  display: flex;
+  gap: 2px;
+  padding: 0.5rem;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+  min-height: 60px;
+  align-items: center;
+}
+
+.rhythm-pattern-empty {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg-tertiary);
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.rhythm-pattern-block {
+  height: 40px;
+  background: var(--fg);
+  border: 1px solid var(--fg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease-out;
+}
+
+.rhythm-pattern-block--quarter { flex: 1; }
+.rhythm-pattern-block--eighth { flex: 0.5; }
+.rhythm-pattern-block--half { flex: 2; }
+.rhythm-pattern-block--rest {
+  background: transparent;
+  border: 1px dashed var(--fg);
+}
+
+.rhythm-pattern-block--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.rhythm-pattern-block--matched {
+  background: #15803D;
+  border-color: #15803D;
+}
+
+.rhythm-pattern-block__bar {
+  width: 60%;
+  height: 2px;
+  background: var(--fg-inverse);
+  margin: 1px 0;
+}
+
+.rhythm-pattern-block__label {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--fg-inverse);
+  text-transform: uppercase;
+}
+
+.rhythm-pattern-block--rest .rhythm-pattern-block__label {
+  color: var(--fg-tertiary);
+}
+
+.rhythm-phase {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+  text-align: center;
+}
+
+/* 统计区 */
+.rhythm-stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 1px solid var(--fg);
+}
+
+.rhythm-stat {
+  padding: 0.5rem;
+  border-right: 1px solid var(--border-muted);
+  text-align: center;
+}
+
+.rhythm-stat:last-child { border-right: none; }
+
+.rhythm-stat__label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+  margin-bottom: 0.25rem;
+}
+
+.rhythm-stat__value {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.rhythm-stat--accuracy .rhythm-stat__value {
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+
+/* 操作按钮 */
+.rhythm-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rhythm-start-btn,
+.rhythm-play-btn,
+.rhythm-reset-btn {
+  padding: 0.5rem 1rem;
+  background: var(--fg);
+  color: var(--fg-inverse);
+  border: 1px solid var(--fg);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all var(--transition);
+  min-height: 44px;
+}
+
+.rhythm-start-btn:hover,
+.rhythm-play-btn:hover,
+.rhythm-reset-btn:hover {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.rhythm-start-btn--stop {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.rhythm-start-btn--stop:hover {
+  background: var(--bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.rhythm-tap-btn {
+  flex: 1;
+  min-height: 64px;
+  background: var(--fg);
+  color: var(--fg-inverse);
+  border: 2px solid var(--fg);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.05s;
+}
+
+.rhythm-tap-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.rhythm-tap-btn:active {
+  transform: translate(2px, 2px);
+}
+
+.rhythm-tap-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 敲击结果 */
+.rhythm-tap-result {
+  text-align: center;
+  padding: 0.5rem;
+  border: 1px solid var(--fg);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.rhythm-tap-result__label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.rhythm-tap-result--perfect { background: #15803D; color: #fff; }
+.rhythm-tap-result--good { background: var(--fg); color: var(--fg-inverse); }
+.rhythm-tap-result--ok { background: var(--neutral-100); color: var(--fg); }
+.rhythm-tap-result--miss { background: var(--accent); color: #fff; }
+.rhythm-tap-result--none { color: var(--fg-tertiary); font-weight: 400; font-size: 1rem; }
+
+/* ============================================
+   乐曲练习 — Newsprint 风格
+   ============================================ */
+.song-practice {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+}
+
+/* Tab 切换 */
+.song-practice__tabs {
+  display: flex;
+  border: 1px solid var(--fg);
+}
+
+.song-practice__tab {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.song-practice__tab:last-child { border-right: none; }
+.song-practice__tab:hover { background: var(--neutral-100); }
+.song-practice__tab--active {
+  background: var(--fg);
+  color: var(--fg-inverse);
+}
+
+/* 乐曲库网格 */
+.song-practice__library {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0;
+  border: 1px solid var(--fg);
+}
+
+.song-practice__card {
+  padding: 0.875rem;
+  background: var(--bg);
+  border: none;
+  border-right: 1px solid var(--border-muted);
+  border-bottom: 1px solid var(--border-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: left;
+}
+
+.song-practice__card:hover {
+  background: var(--neutral-100);
+}
+
+.song-practice__card--active {
+  background: var(--fg);
+}
+
+.song-practice__card--active .song-practice__card-name,
+.song-practice__card--active .song-practice__card-composer,
+.song-practice__card--active .song-practice__card-difficulty,
+.song-practice__card--active .song-practice__card-bpm {
+  color: var(--fg-inverse);
+}
+
+.song-practice__card-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 0.25rem;
+}
+
+.song-practice__card-composer {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-tertiary);
+  margin-bottom: 0.375rem;
+}
+
+.song-practice__card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.song-practice__card-difficulty {
+  font-size: 0.625rem;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+.song-practice__card-bpm {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--fg-tertiary);
+}
+
+/* MIDI 导入区 */
+.song-practice__import {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px dashed var(--fg);
+}
+
+.song-practice__file-input {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+}
+
+.song-practice__error {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--accent);
+  padding: 0.5rem;
+  border: 1px solid var(--accent);
+}
+
+.song-practice__parsed-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.song-practice__parsed-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.song-practice__parsed-tracks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.song-practice__track-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+  margin-right: 0.5rem;
+}
+
+.song-practice__track-btn {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-muted);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.song-practice__track-btn:hover { background: var(--neutral-100); }
+.song-practice__track-btn--active {
+  background: var(--fg);
+  color: var(--fg-inverse);
+  border-color: var(--fg);
+}
+
+/* 播放器区 */
+.song-practice__player {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+}
+
+.song-practice__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 0.5rem;
+}
+
+.song-practice__song-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--fg);
+}
+
+.song-practice__position {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--fg-tertiary);
+}
+
+/* 进度条 */
+.song-practice__progress {
+  height: 8px;
+  background: var(--neutral-200);
+  border: 1px solid var(--fg);
+  overflow: hidden;
+}
+
+.song-practice__progress-bar {
+  height: 100%;
+  background: var(--fg);
+  transition: width 0.2s ease-out;
+}
+
+/* 当前音符显示 */
+.song-practice__current-note {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 2px solid var(--fg);
+  background: var(--neutral-100);
+  min-height: 60px;
+}
+
+.song-practice__note-name {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--fg);
+}
+
+.song-practice__note-octave {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--fg-tertiary);
+}
+
+.song-practice__note-done {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-style: italic;
+  color: var(--fg-tertiary);
+}
+
+/* 控制区 */
+.song-practice__controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.song-practice__follow-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.song-practice__follow-toggle input {
+  accent-color: var(--fg);
+}
+
+.song-practice__speed {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+/* 统计 */
+.song-practice__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--fg);
+}
+
+.song-practice__stat {
+  padding: 0.5rem;
+  border-right: 1px solid var(--border-muted);
+  text-align: center;
+}
+
+.song-practice__stat:last-child { border-right: none; }
+
+.song-practice__stat-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+  margin-bottom: 0.25rem;
+}
+
+.song-practice__stat-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.song-practice__stat-value--correct { color: #15803D; }
+.song-practice__stat-value--wrong { color: var(--accent); }
+
+/* 提示 */
+.song-practice__hint {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+  text-align: center;
+  padding: 0.375rem;
+  border: 1px dashed var(--border-muted);
+}
+
+/* 音符预览 */
+.song-practice__preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.song-practice__preview-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fg-tertiary);
+}
+
+.song-practice__preview-note {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg);
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--border-muted);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .rhythm-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .rhythm-stat:nth-child(3n) { border-right: none; }
+  .rhythm-stat:nth-child(-n+3) { border-bottom: 1px solid var(--border-muted); }
+
+  .song-practice__library {
+    grid-template-columns: 1fr;
+  }
+
+  .song-practice__card {
+    border-right: none;
+  }
+
+  .song-practice__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .song-practice__controls button,
+  .song-practice__follow-toggle,
+  .song-practice__speed {
+    width: 100%;
+    justify-content: center;
+  }
+}

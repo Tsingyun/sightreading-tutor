@@ -3,21 +3,11 @@
  * ============================================
  * 整合所有模块，构建完整的识谱训练界面。
  *
- * 两种应用模式：
+ * 四种应用模式：
  * - training: 识谱训练（单音/和弦出题，判定对错）
  * - freeplay: 自由弹奏（实时显示音符、识别和弦与转位）
- *
- * 布局结构：
- * ┌──────────────────────────────────────────────┐
- * │  Header（标题 + 帮助 + 主题切换）               │
- * ├──────────────────────────────────────────────┤
- * │         ModeToggle（模式切换）                  │
- * ├──────────────────┬───────────────────────────┤
- * │                  │  StatsPanel（统计）        │
- * │  Staff / FreePlay│  SettingsPanel（设置）     │
- * │  Feedback        │  MidiSelector（MIDI）      │
- * │  VirtualKeyboard │                           │
- * └──────────────────┴───────────────────────────┘
+ * - rhythm: 节奏训练（节拍器 + 节奏型 + 敲击评分）
+ * - song: 乐曲练习（内置曲库 + MIDI 导入 + 跟弹模式）
  *
  * 首次访问自动弹出新手引导。
  */
@@ -31,12 +21,16 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { Feedback } from './components/Feedback';
 import { VirtualKeyboard } from './components/VirtualKeyboard';
 import { FreePlay } from './components/FreePlay';
+import { RhythmTrainer } from './components/RhythmTrainer';
+import { SongPractice } from './components/SongPractice';
 import { MilestoneModal } from './components/MilestoneModal';
 import { GuideModal } from './components/GuideModal';
 import { useTheme } from './hooks/useTheme';
 import { useMidi } from './hooks/useMidi';
 import { useTraining } from './hooks/useTraining';
 import { useFreePlay } from './hooks/useFreePlay';
+import { useSongPractice } from './hooks/useSongPractice';
+import { getKeySignatureConfig } from './lib/music';
 import { loadGuideSeen, saveGuideSeen } from './lib/storage';
 import type { AppMode } from './types';
 import './App.css';
@@ -46,6 +40,7 @@ function App() {
   const midi = useMidi();
   const training = useTraining();
   const freePlay = useFreePlay();
+  const songPractice = useSongPractice();
 
   const [appMode, setAppMode] = useState<AppMode>('training');
   const [guideVisible, setGuideVisible] = useState(false);
@@ -66,19 +61,27 @@ function App() {
   trainingRef.current = training;
   const freePlayRef = useRef(freePlay);
   freePlayRef.current = freePlay;
+  const songPracticeRef = useRef(songPractice);
+  songPracticeRef.current = songPractice;
   const appModeRef = useRef(appMode);
   appModeRef.current = appMode;
 
   // 注册 MIDI 按键回调（仅注册一次）
   useEffect(() => {
     midi.onNote((note, _velocity, isNoteOn) => {
-      if (appModeRef.current === 'freeplay') {
+      const mode = appModeRef.current;
+      if (mode === 'freeplay') {
         if (isNoteOn) {
           freePlayRef.current.handleNoteOn(note);
         } else {
           freePlayRef.current.handleNoteOff(note);
         }
+      } else if (mode === 'song') {
+        if (isNoteOn) {
+          songPracticeRef.current.submitAnswer(note);
+        }
       } else {
+        // training mode
         if (isNoteOn && trainingRef.current.isTraining) {
           trainingRef.current.submitAnswer(note);
         }
@@ -87,7 +90,7 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 虚拟键盘按键处理：自由弹奏模式下切换按下/松开
+  // 虚拟键盘按键处理
   const handleVirtualKeyPress = (midiNote: number) => {
     if (appMode === 'freeplay') {
       if (freePlay.activeNotes.includes(midiNote)) {
@@ -95,10 +98,17 @@ function App() {
       } else {
         freePlay.handleNoteOn(midiNote);
       }
+    } else if (appMode === 'song') {
+      songPractice.submitAnswer(midiNote);
     } else {
       training.submitAnswer(midiNote);
     }
   };
+
+  // 获取调号的 VexFlow 格式
+  const keySigVex = training.config.keySignature
+    ? getKeySignatureConfig(training.config.keySignature).vexKey
+    : 'C';
 
   return (
     <div className="app" data-theme={theme}>
@@ -121,9 +131,21 @@ function App() {
             >
               🎹 自由弹奏
             </button>
+            <button
+              className={`mode-toggle__btn ${appMode === 'rhythm' ? 'mode-toggle__btn--active' : ''}`}
+              onClick={() => setAppMode('rhythm')}
+            >
+              🥁 节奏训练
+            </button>
+            <button
+              className={`mode-toggle__btn ${appMode === 'song' ? 'mode-toggle__btn--active' : ''}`}
+              onClick={() => setAppMode('song')}
+            >
+              🎼 乐曲练习
+            </button>
           </div>
 
-          {appMode === 'training' ? (
+          {appMode === 'training' && (
             <>
               {/* —— 训练模式 —— */}
               <div className="staff-wrapper">
@@ -137,6 +159,7 @@ function App() {
                   alwaysShowLabel={training.config.showNoteLabel}
                   flashLabel={training.flashLabel}
                   theme={theme}
+                  keySignature={keySigVex}
                 />
               </div>
 
@@ -186,18 +209,25 @@ function App() {
                 disabled={!training.isTraining}
               />
             </>
-          ) : (
-            <>
-              {/* —— 自由弹奏模式 —— */}
-              <FreePlay
-                activeNotes={freePlay.activeNotes}
-                displayedNotes={freePlay.displayedNotes}
-                chordInfo={freePlay.chordInfo}
-                theme={theme}
-                onVirtualKeyPress={handleVirtualKeyPress}
-                onClear={freePlay.clearAll}
-              />
-            </>
+          )}
+
+          {appMode === 'freeplay' && (
+            <FreePlay
+              activeNotes={freePlay.activeNotes}
+              displayedNotes={freePlay.displayedNotes}
+              chordInfo={freePlay.chordInfo}
+              theme={theme}
+              onVirtualKeyPress={handleVirtualKeyPress}
+              onClear={freePlay.clearAll}
+            />
+          )}
+
+          {appMode === 'rhythm' && (
+            <RhythmTrainer onVirtualKeyPress={handleVirtualKeyPress} />
+          )}
+
+          {appMode === 'song' && (
+            <SongPractice onVirtualKeyPress={handleVirtualKeyPress} />
           )}
         </section>
 
@@ -210,7 +240,6 @@ function App() {
                 allTimeBestStreak={training.allTimeBestStreak}
                 onReset={training.resetStats}
               />
-
               <SettingsPanel config={training.config} onUpdate={training.updateConfig} />
             </>
           )}
@@ -239,6 +268,32 @@ function App() {
               </ul>
             </div>
           )}
+
+          {appMode === 'rhythm' && (
+            <div className="freeplay-sidebar-info">
+              <h3>节奏训练说明</h3>
+              <ul>
+                <li>调节 BPM 和拍号，开始节拍器</li>
+                <li>练习模式：跟着节拍敲击（空格键或按钮）</li>
+                <li>挑战模式：听一遍节奏型，然后凭记忆复现</li>
+                <li>±100ms 完美 / ±200ms 良好 / ±300ms 一般</li>
+                <li>统计准确率，追踪进步</li>
+              </ul>
+            </div>
+          )}
+
+          {appMode === 'song' && (
+            <div className="freeplay-sidebar-info">
+              <h3>乐曲练习说明</h3>
+              <ul>
+                <li>从乐曲库选择经典曲目，或导入 MIDI 文件</li>
+                <li>跟弹模式：弹对当前音才前进</li>
+                <li>自动播放：按节拍自动前进</li>
+                <li>支持 0.5x / 0.75x / 1x 速度调节</li>
+                <li>实时统计正确率和进度</li>
+              </ul>
+            </div>
+          )}
         </aside>
       </main>
 
@@ -248,7 +303,7 @@ function App() {
           <span className="app-footer__divider">·</span>
           <span>基于 Web MIDI API + VexFlow 构建</span>
           <span className="app-footer__divider">·</span>
-          <span>支持单音/和弦训练 + 自由弹奏</span>
+          <span>识谱 / 自由弹奏 / 节奏 / 乐曲</span>
         </div>
         <p className="app-footer__copyright">© {new Date().getFullYear()} 识谱大师 — All Rights Reserved</p>
       </footer>

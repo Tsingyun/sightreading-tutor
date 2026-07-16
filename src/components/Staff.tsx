@@ -24,6 +24,7 @@ interface StaffProps {
   alwaysShowLabel?: boolean;
   flashLabel?: boolean;
   theme: ThemeMode;
+  keySignature?: string;
 }
 
 function resolveThemeColors(_theme: ThemeMode): ThemeColors {
@@ -37,7 +38,7 @@ function resolveThemeColors(_theme: ThemeMode): ThemeColors {
   };
 }
 
-export function Staff({ note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, flashLabel, theme }: StaffProps) {
+export function Staff({ note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, flashLabel, theme, keySignature }: StaffProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastWidthRef = useRef(0);
   const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,6 +61,7 @@ export function Staff({ note, chord, playedIndices, answerState, clefMode, showL
         flashLabel,
         chordName: chord?.name,
         themeColors,
+        keySignature,
       };
 
       if (clefMode === 'both') {
@@ -93,7 +95,7 @@ export function Staff({ note, chord, playedIndices, answerState, clefMode, showL
       resizeObserver.disconnect();
       if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
     };
-  }, [note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, flashLabel, themeColors]);
+  }, [note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, flashLabel, themeColors, keySignature]);
 
   return (
     <div className={`staff-container staff-state--${answerState}`}>

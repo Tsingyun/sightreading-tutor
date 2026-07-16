@@ -35,6 +35,7 @@ export const DEFAULT_CONFIG: TrainingConfig = {
   chordSize: 3,
   difficultyLevel: 1,
   showNoteLabel: true,
+  keySignature: 'C',
 };
 
 /** 安全读取 JSON */

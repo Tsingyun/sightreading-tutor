@@ -20,7 +20,7 @@ import type {
   ClefType,
   ChordInfo,
 } from '../types';
-import { midiToNoteInfo, generateRandomNote, generateRandomChord, getDifficultyConfig, getNoteHint } from '../lib/music';
+import { midiToNoteInfo, generateRandomNote, generateRandomNoteInKey, generateRandomChord, getDifficultyConfig, getNoteHint } from '../lib/music';
 import {
   loadStats,
   saveStats,
@@ -174,11 +174,21 @@ export function useTraining(): UseTrainingReturn {
       questionStartTimeRef.current = performance.now();
     } else {
       // —— 单音模式 ——
-      const midi = generateRandomNote(
-        { low: config.lowNote, high: config.highNote },
-        config.includeAccidentals,
-        lastNoteRef.current,
-      );
+      let midi: number;
+      if (config.keySignature && config.keySignature !== 'C') {
+        // 调号模式：生成调内音
+        midi = generateRandomNoteInKey(
+          { low: config.lowNote, high: config.highNote },
+          config.keySignature,
+          lastNoteRef.current,
+        );
+      } else {
+        midi = generateRandomNote(
+          { low: config.lowNote, high: config.highNote },
+          config.includeAccidentals,
+          lastNoteRef.current,
+        );
+      }
       lastNoteRef.current = midi;
       const note = midiToNoteInfo(midi);
 
@@ -524,7 +534,7 @@ export function useTraining(): UseTrainingReturn {
       nextQuestion();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.clef, config.lowNote, config.highNote, config.includeAccidentals, config.mode, config.chordSize, config.difficultyLevel]);
+  }, [config.clef, config.lowNote, config.highNote, config.includeAccidentals, config.mode, config.chordSize, config.difficultyLevel, config.keySignature]);
 
   // 组件卸载时清除定时器
   useEffect(() => {
