@@ -155,7 +155,7 @@ export function FreePlay({
         playedIndices={[]}
         wrongNote={null}
         mode="single"
-        range={{ low: 36, high: 84 }}
+        range={{ low: 48, high: 72 }}
         onKeyPress={onVirtualKeyPress}
         freePlayActiveNotes={activeNotes}
       />
