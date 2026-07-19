@@ -139,6 +139,8 @@ function App() {
         onShowGuide={() => setGuideVisible(true)}
         soundEnabled={pianoSound.enabled}
         onToggleSound={pianoSound.toggle}
+        soundLoadStatus={pianoSound.loadStatus}
+        soundLoadProgress={pianoSound.loadProgress}
       />
 
       <main className="app-main">

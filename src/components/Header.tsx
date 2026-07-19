@@ -10,11 +10,25 @@ interface HeaderProps {
   onShowGuide: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  soundLoadStatus: 'idle' | 'loading' | 'ready' | 'error' | 'fallback';
+  soundLoadProgress: number;
 }
 
-export function Header({ onShowGuide, soundEnabled, onToggleSound }: HeaderProps) {
+export function Header({ onShowGuide, soundEnabled, onToggleSound, soundLoadStatus, soundLoadProgress }: HeaderProps) {
   const today = new Date();
   const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+
+  // 声音按钮文字
+  const soundLabel = (() => {
+    if (!soundEnabled) return '声音 关';
+    if (soundLoadStatus === 'loading') {
+      const pct = Math.round(soundLoadProgress * 100);
+      return `音色 ${pct}%`;
+    }
+    if (soundLoadStatus === 'fallback') return '声音 开';
+    if (soundLoadStatus === 'ready') return '声音 开';
+    return '声音 开';
+  })();
 
   return (
     <header className="app-header">
@@ -28,13 +42,23 @@ export function Header({ onShowGuide, soundEnabled, onToggleSound }: HeaderProps
         <span className="app-header__meta-spacer" />
         {/* 声音开关 */}
         <button
-          className={`header-btn header-btn--sound ${soundEnabled ? 'header-btn--active' : ''}`}
+          className={`header-btn header-btn--sound ${soundEnabled ? 'header-btn--active' : ''} ${soundLoadStatus === 'loading' ? 'header-btn--loading' : ''}`}
           onClick={onToggleSound}
-          title={soundEnabled ? '关闭键盘声音' : '开启键盘声音'}
+          title={
+            !soundEnabled
+              ? '开启键盘声音'
+              : soundLoadStatus === 'loading'
+                ? `音色加载中… ${Math.round(soundLoadProgress * 100)}%`
+                : soundLoadStatus === 'fallback'
+                  ? '音色加载失败，使用合成音'
+                  : soundLoadStatus === 'ready'
+                    ? '关闭键盘声音'
+                    : '关闭键盘声音'
+          }
           aria-label={soundEnabled ? '关闭键盘声音' : '开启键盘声音'}
           aria-pressed={soundEnabled}
         >
-          <span>{soundEnabled ? '声音 开' : '声音 关'}</span>
+          <span>{soundLabel}</span>
         </button>
         {/* 帮助 */}
         <button

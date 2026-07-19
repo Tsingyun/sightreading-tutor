@@ -13,6 +13,7 @@
     "@tonejs/midi": "^2.0.28",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "smplr": "^1.0.0",
     "vexflow": "^5.0.0",
     "vite-plugin-pwa": "^1.3.0"
   },

@@ -115,6 +115,16 @@
   color: var(--fg-inverse);
 }
 
+/* 加载中状态 — 脉冲动画 */
+.header-btn--loading {
+  animation: header-btn-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes header-btn-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 /* ========== Main 布局 — 报纸网格 ========== */
 .app-main {
   flex: 1;
