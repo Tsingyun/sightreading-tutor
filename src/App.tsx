@@ -30,6 +30,7 @@ import { useMidi } from './hooks/useMidi';
 import { useTraining } from './hooks/useTraining';
 import { useFreePlay } from './hooks/useFreePlay';
 import { useSongPractice } from './hooks/useSongPractice';
+import { usePianoSound } from './hooks/usePianoSound';
 import { getKeySignatureConfig } from './lib/music';
 import { loadGuideSeen, saveGuideSeen } from './lib/storage';
 import type { AppMode } from './types';
@@ -41,6 +42,7 @@ function App() {
   const training = useTraining();
   const freePlay = useFreePlay();
   const songPractice = useSongPractice();
+  const pianoSound = usePianoSound();
 
   const [appMode, setAppMode] = useState<AppMode>('training');
   const [guideVisible, setGuideVisible] = useState(false);
@@ -63,13 +65,26 @@ function App() {
   freePlayRef.current = freePlay;
   const songPracticeRef = useRef(songPractice);
   songPracticeRef.current = songPractice;
+  const pianoSoundRef = useRef(pianoSound);
+  pianoSoundRef.current = pianoSound;
   const appModeRef = useRef(appMode);
   appModeRef.current = appMode;
 
   // 注册 MIDI 按键回调（仅注册一次）
   useEffect(() => {
-    midi.onNote((note, _velocity, isNoteOn) => {
+    midi.onNote((note, velocity, isNoteOn) => {
       const mode = appModeRef.current;
+      // 所有模式：MIDI 按键均发声（自由弹奏用持续音，其他用短促音）
+      if (isNoteOn) {
+        if (mode === 'freeplay') {
+          pianoSoundRef.current.noteOn(note, velocity || 0.7);
+        } else {
+          pianoSoundRef.current.playNote(note, velocity || 0.7);
+        }
+      } else if (mode === 'freeplay') {
+        pianoSoundRef.current.noteOff(note);
+      }
+
       if (mode === 'freeplay') {
         if (isNoteOn) {
           freePlayRef.current.handleNoteOn(note);
@@ -94,13 +109,21 @@ function App() {
   const handleVirtualKeyPress = (midiNote: number) => {
     if (appMode === 'freeplay') {
       if (freePlay.activeNotes.includes(midiNote)) {
+        // 松开：停止声音
+        pianoSound.noteOff(midiNote);
         freePlay.handleNoteOff(midiNote);
       } else {
+        // 按下：播放持续音
+        pianoSound.noteOn(midiNote);
         freePlay.handleNoteOn(midiNote);
       }
     } else if (appMode === 'song') {
+      // 乐曲模式：短促音
+      pianoSound.playNote(midiNote);
       songPractice.submitAnswer(midiNote);
     } else {
+      // 训练模式：短促音
+      pianoSound.playNote(midiNote);
       training.submitAnswer(midiNote);
     }
   };
@@ -112,7 +135,11 @@ function App() {
 
   return (
     <div className="app" data-theme={theme}>
-      <Header onShowGuide={() => setGuideVisible(true)} />
+      <Header
+        onShowGuide={() => setGuideVisible(true)}
+        soundEnabled={pianoSound.enabled}
+        onToggleSound={pianoSound.toggle}
+      />
 
       <main className="app-main">
         {/* 左侧：主练习区域 */}

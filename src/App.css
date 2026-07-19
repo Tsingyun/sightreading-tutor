@@ -98,6 +98,23 @@
   color: var(--fg-inverse);
 }
 
+/* 声音开关按钮 — 开启时用编辑红高亮 */
+.header-btn--sound {
+  margin-right: 0.25rem;
+}
+
+.header-btn--sound.header-btn--active {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.header-btn--sound.header-btn--active:hover {
+  background-color: var(--fg);
+  border-color: var(--fg);
+  color: var(--fg-inverse);
+}
+
 /* ========== Main 布局 — 报纸网格 ========== */
 .app-main {
   flex: 1;

@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   theme: 'sightreading_theme',
   bestStreak: 'sightreading_best_streak',
   guideSeen: 'sightreading_guide_seen',
+  soundEnabled: 'sightreading_sound_enabled',
 } as const;
 
 /** 默认训练统计 */
@@ -113,4 +114,17 @@ export function loadGuideSeen(): boolean {
 /** 标记已看过新手引导 */
 export function saveGuideSeen(): void {
   safeWrite(STORAGE_KEYS.guideSeen, 'true');
+}
+
+/** 读取声音开关状态（默认开启） */
+export function loadSoundEnabled(): boolean {
+  const raw = localStorage.getItem(STORAGE_KEYS.soundEnabled);
+  // 默认开启：未设置过时返回 true
+  if (raw === null) return true;
+  return raw === 'true';
+}
+
+/** 保存声音开关状态 */
+export function saveSoundEnabled(enabled: boolean): void {
+  localStorage.setItem(STORAGE_KEYS.soundEnabled, String(enabled));
 }
