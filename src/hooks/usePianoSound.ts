@@ -73,6 +73,17 @@ export function usePianoSound(): UsePianoSoundReturn {
   useEffect(() => { enabledRef.current = enabled; saveSoundEnabled(enabled); }, [enabled]);
   useEffect(() => { loadStatusRef.current = loadStatus; }, [loadStatus]);
 
+  /** 应用启动时预加载采样（如果声音已开启）
+   *  浏览器允许创建 suspended 状态的 AudioContext，
+   *  网络下载和音频解码不受自动播放策略限制，
+   *  只是不能出声。用户首次交互时 resume() 即可立即播放。 */
+  useEffect(() => {
+    if (enabledRef.current && loadStatusRef.current === 'idle') {
+      initPiano();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   /** 确保 AudioContext 可用 */
   const ensureAudioContext = useCallback(() => {
     if (audioCtxRef.current) {
