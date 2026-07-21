@@ -9,12 +9,15 @@ import { useState, useCallback, useRef } from 'react';
 import { SONG_LIBRARY, type PresetSong } from '../lib/songLibrary';
 import { parseMidiFile, type ParsedSong } from '../lib/midiParser';
 import { useSongPractice } from '../hooks/useSongPractice';
+import { Staff } from './Staff';
+import type { ThemeMode } from '../types';
 
 interface SongPracticeProps {
   onVirtualKeyPress: (midi: number) => void;
+  theme: ThemeMode;
 }
 
-export function SongPractice({ onVirtualKeyPress: _onVirtualKeyPress }: SongPracticeProps) {
+export function SongPractice({ onVirtualKeyPress: _onVirtualKeyPress, theme }: SongPracticeProps) {
   const [tab, setTab] = useState<'library' | 'import'>('library');
   const [parsedSong, setParsedSong] = useState<ParsedSong | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -23,7 +26,7 @@ export function SongPractice({ onVirtualKeyPress: _onVirtualKeyPress }: SongPrac
 
   const {
     currentSong, isPlaying, isFollowMode, speedMultiplier,
-    stats, currentNote, allNotes,
+    stats, currentNote, allNotes, answerState, wrongNote,
     loadSong, play, pause, reset,
     setFollowMode, setSpeedMultiplier,
   } = useSongPractice();
@@ -163,16 +166,38 @@ export function SongPractice({ onVirtualKeyPress: _onVirtualKeyPress }: SongPrac
             />
           </div>
 
-          {/* 当前音符 */}
+          {/* 五线谱显示当前音符 */}
+          <div className="song-practice__staff-wrapper">
+            {currentNote ? (
+              <Staff
+                note={currentNote}
+                chord={null}
+                playedIndices={[]}
+                answerState={answerState}
+                clefMode={currentNote.clef}
+                showLabel={answerState === 'correct'}
+                alwaysShowLabel={false}
+                flashLabel={false}
+                theme={theme}
+                keySignature="C"
+              />
+            ) : (
+              <div className="song-practice__note-done">乐曲完成</div>
+            )}
+          </div>
+
+          {/* 音名提示（辅助） */}
           <div className="song-practice__current-note">
             {currentNote ? (
               <>
-                <span className="song-practice__note-name">{currentNote.name}</span>
-                <span className="song-practice__note-octave">{currentNote.octave}</span>
+                <span className={`song-practice__note-name ${answerState === 'wrong' ? 'song-practice__note-name--wrong' : ''} ${answerState === 'correct' ? 'song-practice__note-name--correct' : ''}`}>
+                  {currentNote.name}{currentNote.octave}
+                </span>
+                {wrongNote !== null && (
+                  <span className="song-practice__wrong-note">弹了 {wrongNote}</span>
+                )}
               </>
-            ) : (
-              <span className="song-practice__note-done">乐曲完成</span>
-            )}
+            ) : null}
           </div>
 
           {/* 控制按钮 */}

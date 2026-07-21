@@ -256,7 +256,7 @@ function App() {
           )}
 
           {appMode === 'song' && (
-            <SongPractice onVirtualKeyPress={handleVirtualKeyPress} />
+            <SongPractice onVirtualKeyPress={handleVirtualKeyPress} theme={theme} />
           )}
         </section>
 

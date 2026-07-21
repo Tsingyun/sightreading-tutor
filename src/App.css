@@ -2425,23 +2425,22 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
   transition: width 0.2s ease-out;
 }
 
-/* 当前音符显示 */
+/* 当前音符辅助显示（五线谱下方的音名） */
 .song-practice__current-note {
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: 0.25rem;
-  padding: 1rem;
-  border: 2px solid var(--fg);
-  background: var(--neutral-100);
-  min-height: 60px;
+  padding: 0.5rem;
+  min-height: 40px;
 }
 
 .song-practice__note-name {
   font-family: var(--font-display);
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: var(--fg);
+  transition: color 0.2s ease;
 }
 
 .song-practice__note-octave {
@@ -2455,6 +2454,37 @@ input[type='checkbox']:checked + .toggle-track .toggle-thumb {
   font-size: 1.25rem;
   font-style: italic;
   color: var(--fg-tertiary);
+}
+
+/* 五线谱区域 */
+.song-practice__staff-wrapper {
+  background-color: var(--bg-card);
+  border: 2px solid var(--fg);
+  padding: 1.5rem 1rem;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.song-practice__staff-wrapper .song-practice__note-done {
+  text-align: center;
+}
+
+/* 音名反馈颜色 */
+.song-practice__note-name--wrong {
+  color: var(--accent);
+}
+
+.song-practice__note-name--correct {
+  color: #15803D;
+}
+
+.song-practice__wrong-note {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--accent);
+  margin-left: 0.5rem;
 }
 
 /* 控制区 */

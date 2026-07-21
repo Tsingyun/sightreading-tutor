@@ -8,7 +8,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { PresetSong } from '../lib/songLibrary';
 import { midiToNoteInfo } from '../lib/music';
-import type { NoteInfo } from '../types';
+import type { NoteInfo, AnswerState } from '../types';
 
 export interface SongPracticeStats {
   correct: number;
@@ -25,6 +25,8 @@ export interface UseSongPracticeReturn {
   stats: SongPracticeStats;
   currentNote: NoteInfo | null;
   allNotes: NoteInfo[];
+  answerState: AnswerState;
+  wrongNote: number | null;
   loadSong: (song: PresetSong) => void;
   play: () => void;
   pause: () => void;
@@ -43,8 +45,11 @@ export function useSongPractice(): UseSongPracticeReturn {
   const [stats, setStats] = useState<SongPracticeStats>({ correct: 0, wrong: 0, total: 0 });
   const [currentNote, setCurrentNote] = useState<NoteInfo | null>(null);
   const [allNotes, setAllNotes] = useState<NoteInfo[]>([]);
+  const [answerState, setAnswerState] = useState<AnswerState>('idle');
+  const [wrongNote, setWrongNote] = useState<number | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const indexRef = useRef(0);
   const isPlayingRef = useRef(false);
   const speedRef = useRef(1);
@@ -100,20 +105,25 @@ export function useSongPractice(): UseSongPracticeReturn {
 
   const loadSong = useCallback((song: PresetSong) => {
     if (timerRef.current) clearTimeout(timerRef.current);
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     setCurrentSong(song);
     setAllNotes(computeAllNotes(song));
     setStats({ correct: 0, wrong: 0, total: 0 });
-    setCurrentIndex(0);
     setIsPlaying(false);
-    indexRef.current = 0;
+    setWrongNote(null);
 
     // 设置第一个可弹音符
     const firstPlayable = song.notes.findIndex((n) => !n.isRest);
     if (firstPlayable >= 0) {
       setCurrentIndex(firstPlayable);
       setCurrentNote(midiToNoteInfo(song.notes[firstPlayable].midi));
+      indexRef.current = firstPlayable;
+      setAnswerState('pending');
     } else {
+      setCurrentIndex(0);
       setCurrentNote(null);
+      indexRef.current = 0;
+      setAnswerState('idle');
     }
   }, [computeAllNotes]);
 
@@ -132,14 +142,17 @@ export function useSongPractice(): UseSongPracticeReturn {
 
   const reset = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     setIsPlaying(false);
     setStats({ correct: 0, wrong: 0, total: 0 });
+    setWrongNote(null);
     if (currentSong) {
       const firstPlayable = currentSong.notes.findIndex((n) => !n.isRest);
       if (firstPlayable >= 0) {
         setCurrentIndex(firstPlayable);
         setCurrentNote(midiToNoteInfo(currentSong.notes[firstPlayable].midi));
         indexRef.current = firstPlayable;
+        setAnswerState('pending');
       }
     }
   }, [currentSong]);
@@ -158,22 +171,41 @@ export function useSongPractice(): UseSongPracticeReturn {
       total: prev.total + 1,
     }));
 
+    // 清除上一个反馈定时器
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+
     if (isCorrect) {
+      setAnswerState('correct');
+      setWrongNote(null);
       // 前进到下一个可弹音符
       const result = advanceToNextPlayable(song, idx + 1);
-      if (result >= 0 && isFollowMode) {
-        // 跟弹模式：等待用户弹下一个音
-      } else if (result >= 0 && !isFollowMode) {
+      if (result >= 0) {
+        // 短暂显示绿色后恢复 pending
+        feedbackTimerRef.current = setTimeout(() => setAnswerState('pending'), 600);
+      } else {
+        // 乐曲结束
+        setAnswerState('idle');
+      }
+      if (result >= 0 && !isFollowMode) {
         scheduleNextNote(song, result);
       }
       return true;
+    } else {
+      setAnswerState('wrong');
+      setWrongNote(midi);
+      // 短暂显示红色后恢复 pending（跟弹模式下允许重试）
+      feedbackTimerRef.current = setTimeout(() => {
+        setAnswerState('pending');
+        setWrongNote(null);
+      }, 800);
+      return false;
     }
-    return false;
   }, [currentSong, isFollowMode, advanceToNextPlayable, scheduleNextNote]);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     };
   }, []);
 
@@ -186,6 +218,8 @@ export function useSongPractice(): UseSongPracticeReturn {
     stats,
     currentNote,
     allNotes,
+    answerState,
+    wrongNote,
     loadSong,
     play,
     pause,
