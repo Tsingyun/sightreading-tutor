@@ -35,7 +35,7 @@ import {
 const MILESTONE_INTERVAL = 100;
 
 /** 反应时间上限（毫秒）—— 超过此值视为暂时离开，不计入平均值 */
-const MAX_REACTION_TIME = 10000;
+const MAX_REACTION_TIME = 5000;
 
 export interface UseTrainingReturn {
   /** 当前题目音符（单音模式） */
