@@ -1,46 +1,59 @@
 /**
- * MilestoneModal 组件
+ * MilestoneModal 组件（Toast 模式）
  * ============================================
- * 完成 100 题（及每 100 题的倍数）时弹出庆祝弹窗。
- * 显示已完成的题数和正确率，可关闭继续训练。
+ * 完成 100 题（及每 100 题的倍数）时在右下角弹出 Toast 提示。
+ * 自动淡出，不打断练习节奏。
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface MilestoneModalProps {
-  /** 是否显示弹窗 */
+  /** 是否显示 */
   visible: boolean;
   /** 里程碑题数（如 100, 200...） */
   value: number;
-  /** 关闭弹窗 */
+  /** 关闭（由自动定时器触发） */
   onClose: () => void;
 }
 
+/** Toast 自动消失时间（毫秒） */
+const TOAST_DURATION = 4000;
+
 export function MilestoneModal({ visible, value, onClose }: MilestoneModalProps) {
-  // 按 ESC 键关闭
+  const [render, setRender] = useState(false);
+  const [show, setShow] = useState(false);
+
   useEffect(() => {
-    if (!visible) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    if (visible) {
+      setRender(true);
+      // 下一帧触发进入动画
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setShow(true));
+      });
+      // 自动消失
+      const timer = setTimeout(() => {
+        setShow(false);
+        // 等淡出动画完成后卸载
+        setTimeout(onClose, 400);
+      }, TOAST_DURATION);
+      return () => clearTimeout(timer);
+    } else {
+      setShow(false);
+      const timer = setTimeout(() => setRender(false), 400);
+      return () => clearTimeout(timer);
+    }
   }, [visible, onClose]);
 
-  if (!visible) return null;
+  if (!render) return null;
 
   return (
-    <div className="milestone-overlay" onClick={onClose}>
-      <div className="milestone-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="milestone-emoji">🎉</div>
-        <h2 className="milestone-title">恭喜达成里程碑！</h2>
-        <p className="milestone-desc">
-          你已经完成了 <strong>{value}</strong> 道练习题
-        </p>
-        <p className="milestone-subdesc">继续努力，识谱能力正在不断提升！</p>
-        <button className="btn-primary btn-large milestone-btn" onClick={onClose}>
-          继续训练
-        </button>
+    <div className={`milestone-toast ${show ? 'milestone-toast--visible' : ''}`}>
+      <div className="milestone-toast__emoji">🎉</div>
+      <div className="milestone-toast__body">
+        <div className="milestone-toast__title">里程碑达成！</div>
+        <div className="milestone-toast__desc">
+          已完成 <strong>{value}</strong> 道练习题
+        </div>
       </div>
     </div>
   );

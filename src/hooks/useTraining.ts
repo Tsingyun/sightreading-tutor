@@ -34,6 +34,9 @@ import {
 /** 里程碑触发的题数间隔 */
 const MILESTONE_INTERVAL = 100;
 
+/** 反应时间上限（毫秒）—— 超过此值视为暂时离开，不计入平均值 */
+const MAX_REACTION_TIME = 10000;
+
 export interface UseTrainingReturn {
   /** 当前题目音符（单音模式） */
   currentNote: NoteInfo | null;
@@ -132,7 +135,7 @@ export function useTraining(): UseTrainingReturn {
     flashLabelTimerRef.current = setTimeout(() => {
       setFlashLabel(false);
       flashLabelTimerRef.current = null;
-    }, 1500);
+    }, 800);
   }, [config.showNoteLabel]);
 
   /** 生成下一题 */
@@ -272,7 +275,8 @@ export function useTraining(): UseTrainingReturn {
             setAnswerState('correct');
 
             if (!statsCountedRef.current) {
-              const reactionTime = performance.now() - questionStartTimeRef.current;
+              const rawReactionTime = performance.now() - questionStartTimeRef.current;
+              const reactionTime = Math.min(rawReactionTime, MAX_REACTION_TIME);
               const newStats: TrainingStats = {
                 correct: stats.correct + 1,
                 total: stats.total + 1,
@@ -296,7 +300,7 @@ export function useTraining(): UseTrainingReturn {
             // 延迟进入下一题（让用户看到和弦名称）
             setTimeout(() => {
               if (isTraining) nextQuestion();
-            }, 1500);
+            }, 800);
           }
           // 否则继续等待用户弹奏剩余的音
         } else {
@@ -319,7 +323,7 @@ export function useTraining(): UseTrainingReturn {
 
             setTimeout(() => {
               if (isTraining) nextQuestion();
-            }, 1200);
+            }, 700);
           } else {
             // 允许继续尝试模式：只给短暂提示，不结束题目，不计统计
             setPressedNote(midi);
@@ -345,7 +349,8 @@ export function useTraining(): UseTrainingReturn {
       setPressedNote(midi);
       // 按键后闪现音名（关闭音名提示时）
       triggerFlashLabel();
-      const reactionTime = performance.now() - questionStartTimeRef.current;
+      const rawReactionTime = performance.now() - questionStartTimeRef.current;
+      const reactionTime = Math.min(rawReactionTime, MAX_REACTION_TIME);
       const isCorrect = midi === currentNote.midi;
 
       if (isCorrect) {
@@ -374,7 +379,7 @@ export function useTraining(): UseTrainingReturn {
 
         setTimeout(() => {
           if (isTraining) nextQuestion();
-        }, 800);
+        }, 400);
       } else {
         setAnswerState('wrong');
 
@@ -393,7 +398,7 @@ export function useTraining(): UseTrainingReturn {
         if (config.autoNextOnError) {
           setTimeout(() => {
             if (isTraining) nextQuestion();
-          }, 1200);
+          }, 700);
         }
       }
     },

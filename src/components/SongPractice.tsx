@@ -9,7 +9,7 @@ import { useState, useCallback, useRef } from 'react';
 import { SONG_LIBRARY, type PresetSong } from '../lib/songLibrary';
 import { parseMidiFile, type ParsedSong } from '../lib/midiParser';
 import { useSongPractice } from '../hooks/useSongPractice';
-import { Staff } from './Staff';
+import { SongStaff } from './SongStaff';
 import type { ThemeMode } from '../types';
 
 interface SongPracticeProps {
@@ -25,7 +25,7 @@ export function SongPractice({ onVirtualKeyPress: _onVirtualKeyPress, theme }: S
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
-    currentSong, isPlaying, isFollowMode, speedMultiplier,
+    currentSong, currentIndex, isPlaying, isFollowMode, speedMultiplier,
     stats, currentNote, allNotes, answerState, wrongNote,
     loadSong, play, pause, reset,
     setFollowMode, setSpeedMultiplier,
@@ -72,11 +72,12 @@ export function SongPractice({ onVirtualKeyPress: _onVirtualKeyPress, theme }: S
   const totalNotes = currentSong?.notes.filter((n) => !n.isRest).length ?? 0;
   const completedNotes = stats.total;
   const accuracy = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-  const currentNoteIndex = allNotes.findIndex((n) => {
-    if (!currentNote) return false;
-    return n.midi === currentNote.midi && n.octave === currentNote.octave;
-  });
-  const displayPosition = currentNoteIndex >= 0 ? currentNoteIndex + 1 : 0;
+
+  // 计算当前音符在 allNotes（非休止音符序列）中的位置
+  const playableNoteIndex = currentSong
+    ? currentSong.notes.slice(0, currentIndex).filter((n) => !n.isRest).length
+    : 0;
+  const displayPosition = playableNoteIndex + 1;
 
   return (
     <div className="song-practice">
@@ -166,20 +167,15 @@ export function SongPractice({ onVirtualKeyPress: _onVirtualKeyPress, theme }: S
             />
           </div>
 
-          {/* 五线谱显示当前音符 */}
+          {/* 五线谱显示音符序列 + 光标 */}
           <div className="song-practice__staff-wrapper">
-            {currentNote ? (
-              <Staff
-                note={currentNote}
-                chord={null}
-                playedIndices={[]}
+            {currentNote && allNotes.length > 0 ? (
+              <SongStaff
+                notes={allNotes}
+                currentIndex={playableNoteIndex}
                 answerState={answerState}
-                clefMode={currentNote.clef}
-                showLabel={answerState === 'correct'}
-                alwaysShowLabel={false}
-                flashLabel={false}
                 theme={theme}
-                keySignature="C"
+                windowSize={4}
               />
             ) : (
               <div className="song-practice__note-done">乐曲完成</div>

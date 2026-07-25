@@ -145,14 +145,13 @@ export function renderStaff(options: RenderOptions): void {
   // 清空容器
   container.innerHTML = '';
 
-  // —— 放大渲染 ——
-  // 单音模式使用 3.0x 放大；和弦模式使用 2.0x 以避免音符头重叠
-  const isChord = notes && notes.length > 1;
-  const scale = isChord ? 2.0 : 3.0;
+  // —— 固定尺寸渲染 ——
+  // 无论单音还是和弦，均使用相同的 scale 和 height，
+  // 避免音符数量变化时 SVG 尺寸跳变导致屏幕闪烁。
+  const scale = 2.5;
   const svgWidth = container.clientWidth || 600;
   const drawWidth = svgWidth / scale;
-  const baseHeight = isChord ? 180 : 160;
-  const svgHeight = baseHeight * scale;
+  const svgHeight = 170 * scale;
 
   // 创建 SVG 渲染器
   const renderer = new Renderer(container, Renderer.Backends.SVG);
@@ -269,12 +268,13 @@ export function renderGrandStaff(options: RenderOptions): void {
 
   container.innerHTML = '';
 
-  const hasMultipleNotes = notes && notes.length > 1;
-  const scale = hasMultipleNotes ? 2.0 : 3.0;
+  // —— 固定尺寸渲染 ——
+  // 无论单音还是多音和弦，均使用相同的 scale 和 height，
+  // 避免自由弹奏时音符数量变化导致五线谱尺寸跳变和闪烁。
+  const scale = 2.5;
   const svgWidth = container.clientWidth || 600;
   const drawWidth = svgWidth / scale;
-  const baseHeight = hasMultipleNotes ? 250 : 230;
-  const svgHeight = baseHeight * scale;
+  const svgHeight = 200 * scale;
 
   const renderer = new Renderer(container, Renderer.Backends.SVG);
   renderer.resize(svgWidth, svgHeight);
@@ -381,5 +381,128 @@ export function renderGrandStaff(options: RenderOptions): void {
     const labelClef = trebleNotes.length > 0 ? 'treble' : 'bass';
     const labelY = labelClef === 'treble' ? 45 : 140;
     drawChordLabel(context, options.chordName, centerX, labelY, themeColors.noteCorrect);
+  }
+}
+
+/**
+ * 乐曲练习专用渲染：在五线谱上渲染一段音符序列，
+ * 用竖线光标标记当前待弹奏的位置。
+ *
+ * - 已弹对的音符显示为绿色
+ * - 当前音符根据 answerState 着色（pending=黑色, correct=绿色, wrong=红色）
+ * - 未弹奏的音符显示为浅灰色
+ * - 光标竖线在当前音符处
+ */
+export interface SongRenderOptions {
+  container: HTMLDivElement;
+  notes: NoteInfo[];
+  currentIndex: number;
+  windowSize?: number;
+  answerState: AnswerState;
+  themeColors: ThemeColors;
+}
+
+export function renderSongStaff(options: SongRenderOptions): void {
+  const { container, notes, currentIndex, windowSize = 4, answerState, themeColors } = options;
+
+  container.innerHTML = '';
+
+  if (notes.length === 0) return;
+
+  // 计算窗口：当前音符前显示 1 个已弹过的音，后面显示剩余位置
+  const start = Math.max(0, currentIndex - 1);
+  const end = Math.min(notes.length, start + windowSize);
+  const windowNotes = notes.slice(start, end);
+  const relativeIndex = currentIndex - start;
+
+  const scale = 2.5;
+  const svgWidth = container.clientWidth || 600;
+  const drawWidth = svgWidth / scale;
+  const svgHeight = 200 * scale;
+
+  const renderer = new Renderer(container, Renderer.Backends.SVG);
+  renderer.resize(svgWidth, svgHeight);
+  const context = renderer.getContext();
+  context.scale(scale, scale);
+  context.setFont('Arial', 12);
+
+  const staveX = 18;
+  const staveWidth = drawWidth - 36;
+  const staveY = 60;
+  const stave = new Stave(staveX, staveY, staveWidth);
+
+  // 谱号取当前音符的谱号
+  const clef = windowNotes[relativeIndex]?.clef || notes[currentIndex]?.clef || 'treble';
+  stave.addClef(clef);
+  stave.setContext(context);
+  stave.setStyle({ strokeStyle: themeColors.staffColor, fillStyle: themeColors.staffColor });
+  stave.draw();
+
+  // 创建每个音符的 StaveNote（统一用四分音符显示）
+  const staveNotes: StaveNote[] = windowNotes.map((note) => {
+    const sn = new StaveNote({
+      keys: [note.vexKey],
+      duration: 'q',
+      clef,
+      autoStem: true,
+    });
+    if (note.accidental) {
+      sn.addModifier(new Accidental(note.accidental), 0);
+    }
+    return sn;
+  });
+
+  // 格式化排列
+  const voice = new Voice({ numBeats: staveNotes.length, beatValue: 4 });
+  voice.setMode(Voice.Mode.SOFT);
+  voice.addTickables(staveNotes);
+
+  const formatter = new Formatter();
+  formatter.joinVoices([voice]);
+  formatter.format([voice], staveWidth - 60);
+
+  voice.draw(context, stave);
+
+  // 逐个着色
+  const noteheads = container.querySelectorAll('.vf-stavenote');
+  noteheads.forEach((el, i) => {
+    const noteheadTexts = el.querySelectorAll('.vf-notehead text');
+    const stems = el.querySelectorAll('.vf-stem path');
+    const notePaths = el.querySelectorAll('.vf-stavenote > path');
+    const accidentals = el.querySelectorAll('.vf-accidental text');
+
+    let color: string;
+    if (i < relativeIndex) {
+      // 已弹对
+      color = themeColors.noteCorrect;
+    } else if (i === relativeIndex) {
+      // 当前音符
+      color = getNoteColor(answerState, themeColors);
+    } else {
+      // 未弹奏
+      color = '#AAAAAA';
+    }
+
+    noteheadTexts.forEach((t) => { (t as SVGTextElement).style.fill = color; });
+    stems.forEach((s) => { (s as SVGPathElement).style.fill = color; });
+    notePaths.forEach((p) => { (p as SVGPathElement).style.stroke = color; });
+    accidentals.forEach((a) => { (a as SVGTextElement).style.fill = color; });
+  });
+
+  // 绘制光标竖线
+  if (relativeIndex < staveNotes.length) {
+    const cursorX = staveNotes[relativeIndex].getAbsoluteX();
+    const staveTop = stave.getYForLine(0) - 8;
+    const staveBottom = stave.getYForLine(4) + 8;
+    const cursorColor = answerState === 'wrong' ? themeColors.noteWrong : themeColors.noteDefault;
+
+    context.save();
+    context.setStrokeStyle(cursorColor);
+    context.setLineWidth(2);
+    context.beginPath();
+    context.moveTo(cursorX, staveTop);
+    context.lineTo(cursorX, staveBottom);
+    context.stroke();
+    context.restore();
   }
 }
