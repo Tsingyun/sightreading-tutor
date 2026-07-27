@@ -135,6 +135,9 @@ function App() {
 
   return (
     <div className="app" data-theme={theme}>
+      {/* 第三个极光光团 — 粉色 */}
+      <div className="app-aurora-pink" />
+
       <Header
         onShowGuide={() => setGuideVisible(true)}
         soundEnabled={pianoSound.enabled}
@@ -144,8 +147,8 @@ function App() {
       />
 
       <main className="app-main">
-        {/* 左侧：主练习区域 */}
-        <section className="app-practice">
+        {/* 左侧：主练习区域 — key 属性确保模式切换时重新挂载并触发入场动画 */}
+        <section className="app-practice" key={appMode}>
           {/* 模式切换 */}
           <div className="mode-toggle">
             <button
@@ -328,13 +331,13 @@ function App() {
 
       <footer className="app-footer">
         <div className="app-footer__meta">
-          <span>Edition: Vol 1.0</span>
+          <span>Aurora Edition v2.0</span>
           <span className="app-footer__divider">·</span>
-          <span>基于 Web MIDI API + VexFlow 构建</span>
+          <span>Web MIDI API + VexFlow + smplr</span>
           <span className="app-footer__divider">·</span>
-          <span>识谱 / 自由弹奏 / 节奏 / 乐曲</span>
+          <span>识谱 · 自由弹奏 · 节奏 · 乐曲</span>
         </div>
-        <p className="app-footer__copyright">© {new Date().getFullYear()} 识谱大师 — All Rights Reserved</p>
+        <p className="app-footer__copyright">© {new Date().getFullYear()} Aurora Conservatory — Where Music Meets the Future</p>
       </footer>
 
       {/* 100 题里程碑弹窗 */}

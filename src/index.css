@@ -1,14 +1,16 @@
 /* ============================================
-   全局样式 & 设计令牌 — Newsprint 设计系统
+   Aurora Conservatory — Design System
    ============================================
-   "All the News That's Fit to Print."
-   - 暖白报纸底色 #F9F9F7，绝非纯白
-   - 墨黑 #111111 为主要文字和边框色
-   - 编辑红 #CC0000 极少量用于强调
-   - 零圆角，硬边框，扁平设计
-   - 衬线标题(Playfair Display) + 衬线正文(Lora) + 无衬线UI(Inter) + 等宽数据(JetBrains Mono)
-   - 永久浅色模式，无暗色主题
+   "Where music meets the future."
+   - 深邃午夜蓝底色 #0A0E1A
+   - 极光渐变：青 #00E5FF → 紫 #B388FF → 粉 #FF6EC7
+   - 玻璃态面板 backdrop-filter blur
+   - 霓虹辉光 box-shadow
+   - Bricolage Grotesque + Outfit + JetBrains Mono
    ============================================ */
+
+/* ========== Google Fonts（必须在所有其他语句之前） ========== */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 /* ========== Noto Music 字体（本地嵌入） ========== */
 @font-face {
@@ -26,67 +28,79 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  border-radius: 0 !important; /* Newsprint: 零圆角，无例外 */
 }
 
-/* ========== Newsprint 设计令牌 ========== */
+/* ========== Aurora 设计令牌 ========== */
 :root {
-  /* 色彩 */
-  --bg: #F9F9F7;              /* 报纸暖白 */
-  --bg-elevated: #F5F5F5;     /* 抬升表面 */
-  --bg-card: #FFFFFF;          /* 卡片纯白 */
-  --bg-hover: #F0F0F0;        /* 悬停灰 */
-  --bg-input: #F5F5F5;        /* 输入框底 */
-  --bg-inverted: #111111;     /* 反转黑底 */
-  --bg-inverted-hover: #2a2a2a;
+  /* 色彩 — 底色 */
+  --bg: #0A0E1A;
+  --bg-deep: #060912;
+  --bg-elevated: #131829;
+  --bg-card: rgba(20, 25, 45, 0.55);
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --bg-glass-hover: rgba(255, 255, 255, 0.08);
+  --bg-input: rgba(255, 255, 255, 0.06);
+  --bg-inverted: #E8ECF4;
 
-  --fg: #111111;              /* 墨黑文字 */
-  --fg-secondary: #525252;    /* 次级文字 */
-  --fg-tertiary: #737373;     /* 三级文字 */
-  --fg-muted: #A3A3A3;        /* 静音文字 */
-  --fg-inverse: #F9F9F7;      /* 反转文字（黑底上） */
+  /* 色彩 — 文字 */
+  --fg: #E8ECF4;
+  --fg-secondary: #9CA3B8;
+  --fg-tertiary: #6B7290;
+  --fg-muted: #4A5070;
+  --fg-inverse: #0A0E1A;
 
-  --accent: #CC0000;          /* 编辑红 */
-  --accent-hover: #A30000;
-  --accent-light: #FFF0F0;
+  /* 色彩 — 强调色（极光三色） */
+  --accent: #00E5FF;
+  --accent-secondary: #B388FF;
+  --accent-tertiary: #FF6EC7;
+  --accent-gold: #FFD700;
+  --accent-glow: rgba(0, 229, 255, 0.35);
+  --accent-secondary-glow: rgba(179, 136, 255, 0.35);
+  --accent-tertiary-glow: rgba(255, 110, 199, 0.35);
 
-  --border: #111111;          /* 主边框：墨黑 */
-  --border-muted: #E5E5E0;    /* 次级边框：分隔灰 */
-  --border-light: #F0F0F0;
+  /* 色彩 — 边框 */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-glow: rgba(0, 229, 255, 0.3);
 
   /* 语义色 */
-  --success: #15803D;
-  --success-light: #F0FDF4;
-  --error: #CC0000;
-  --error-light: #FFF0F0;
-  --warning: #B45309;
+  --success: #00E676;
+  --success-glow: rgba(0, 230, 118, 0.3);
+  --error: #FF5252;
+  --error-glow: rgba(255, 82, 82, 0.3);
+  --warning: #FFB74D;
 
   /* 音符色 */
-  --note-default: #111111;
-  --note-correct: #15803D;
-  --note-wrong: #CC0000;
+  --note-default: #E8ECF4;
+  --note-correct: #00E676;
+  --note-wrong: #FF5252;
 
   /* 谱表色 */
-  --staff-color: #111111;
+  --staff-color: rgba(232, 236, 244, 0.7);
 
-  /* 阴影 — 硬偏移阴影，非柔光投影 */
-  --shadow-hard: 4px 4px 0px 0px #111111;
-  --shadow-hard-sm: 2px 2px 0px 0px #111111;
+  /* 阴影 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+  --shadow-glow-secondary: 0 0 24px var(--accent-secondary-glow);
 
-  /* 圆角 — 全部为 0 */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 
   /* 过渡 */
-  --transition: 200ms ease-out;
-  --transition-slow: 300ms ease-out;
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* 字体 */
-  --font-display: 'Playfair Display', 'Noto Serif SC', 'Songti SC', Georgia, serif;
-  --font-body: 'Lora', 'Noto Serif SC', 'Songti SC', Georgia, serif;
-  --font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Noto Sans SC', 'PingFang SC', sans-serif;
+  --font-body: 'Outfit', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-sans: 'Outfit', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 }
 
@@ -95,16 +109,16 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-body);
   background-color: var(--bg);
-  /* 点阵纹理背景 — 模拟报纸纸张质感 */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23111111' fill-opacity='0.04' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'/%3E%3C/svg%3E");
   color: var(--fg);
   min-height: 100vh;
   line-height: 1.625;
+  overflow-x: hidden;
 }
 
 button {
@@ -125,57 +139,46 @@ input[type='checkbox'] {
 
 /* 滚动条 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-elevated);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--fg);
-  border: 2px solid var(--bg-elevated);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent);
 }
 
-/* ========== Newsprint 工具类 ========== */
-
-/* 硬偏移阴影悬停效果 */
-.hard-shadow-hover {
-  transition: all var(--transition);
-}
-.hard-shadow-hover:hover {
-  box-shadow: var(--shadow-hard);
-  transform: translate(-2px, -2px);
+/* ========== 选区 ========== */
+::selection {
+  background: var(--accent-glow);
+  color: var(--fg);
 }
 
-/* 报纸纹理叠加 */
-.newsprint-texture {
-  position: relative;
-}
-.newsprint-texture::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(0deg, transparent 98%, rgba(0,0,0,0.02) 100%),
-    linear-gradient(90deg, transparent 98%, rgba(0,0,0,0.02) 100%);
-  background-size: 3px 3px;
-  pointer-events: none;
-  opacity: 0.5;
+/* ========== 工具类 ========== */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
-/* 装饰性分隔符 */
-.ornamental-divider {
-  padding: 1rem 0;
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  color: var(--fg-muted);
-  letter-spacing: 1em;
-  user-select: none;
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary), var(--accent-tertiary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px var(--accent-glow), inset 0 0 20px rgba(0, 229, 255, 0.05);
 }

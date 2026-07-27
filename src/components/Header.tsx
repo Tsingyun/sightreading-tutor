@@ -1,9 +1,8 @@
 /**
  * Header 组件
  * ============================================
- * 报纸报头风格：刊名、副标题、出版信息、声音开关、帮助按钮。
- * 遵循 Newsprint 设计系统：高对比衬线大标题、
- * 等宽元数据、4px 底部分割线。
+ * Aurora Conservatory 风格：渐变标题、玻璃态元数据条、
+ * 霓虹声音开关、帮助按钮。
  */
 
 interface HeaderProps {
@@ -32,13 +31,13 @@ export function Header({ onShowGuide, soundEnabled, onToggleSound, soundLoadStat
 
   return (
     <header className="app-header">
-      {/* 顶部元数据条 — 报纸刊号风格 */}
+      {/* 顶部元数据条 */}
       <div className="app-header__meta-bar">
-        <span className="app-header__meta-item">Vol. 1</span>
+        <span className="app-header__meta-item">Aurora v2.0</span>
         <span className="app-header__meta-divider">·</span>
         <span className="app-header__meta-item">{dateStr}</span>
         <span className="app-header__meta-divider">·</span>
-        <span className="app-header__meta-item">音乐教育版</span>
+        <span className="app-header__meta-item">Where Music Meets the Future</span>
         <span className="app-header__meta-spacer" />
         {/* 声音开关 */}
         <button
@@ -71,11 +70,11 @@ export function Header({ onShowGuide, soundEnabled, onToggleSound, soundLoadStat
         </button>
       </div>
 
-      {/* 报头刊名 */}
+      {/* 标题区 */}
       <div className="app-header__masthead">
         <h1 className="app-header__title">识谱大师</h1>
         <p className="app-header__subtitle">
-          The Sight-Reading Tutor — 五线谱识谱训练 · MIDI 交互式教学
+          Aurora Conservatory — 五线谱识谱训练 · MIDI 交互式教学
         </p>
       </div>
     </header>

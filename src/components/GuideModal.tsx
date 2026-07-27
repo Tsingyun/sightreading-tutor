@@ -49,11 +49,11 @@ const STEPS: GuideStep[] = [
               <line key={i} x1="20" y1={y} x2="280" y2={y} stroke="currentColor" strokeWidth="1.5" />
             ))}
             {/* 标注线和间 */}
-            <text x="285" y="34" fontSize="11" fill="var(--text-secondary)">第1线</text>
-            <text x="285" y="49" fontSize="11" fill="var(--text-secondary)">第1间</text>
-            <text x="285" y="64" fontSize="11" fill="var(--text-secondary)">第3线</text>
-            <text x="285" y="79" fontSize="11" fill="var(--text-secondary)">第3间</text>
-            <text x="285" y="94" fontSize="11" fill="var(--text-secondary)">第5线</text>
+            <text x="285" y="34" fontSize="11" fill="var(--fg-secondary)">第1线</text>
+            <text x="285" y="49" fontSize="11" fill="var(--fg-secondary)">第1间</text>
+            <text x="285" y="64" fontSize="11" fill="var(--fg-secondary)">第3线</text>
+            <text x="285" y="79" fontSize="11" fill="var(--fg-secondary)">第3间</text>
+            <text x="285" y="94" fontSize="11" fill="var(--fg-secondary)">第5线</text>
             {/* 高音谱号 - Noto Music 字体 */}
             <text x="18" y="88" fontSize="56" fill="var(--accent)" style={{ fontFamily: "'Noto Music', serif" }}>𝄞</text>
           </svg>
