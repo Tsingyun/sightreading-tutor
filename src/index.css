@@ -531,7 +531,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .staff-canvas__container {
   width: 100%;
-  min-height: 340px;
+  height: 380px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -560,13 +560,20 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   letter-spacing: 0.02em;
 }
 
+/* — Label slot: fixed height, never shifts the staff — */
+.staff-canvas__label-slot {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* — Staff note label (revealed answer) — */
 .staff-note-label {
   font-family: var(--font-display);
   font-size: 28px;
   font-weight: 400;
   color: var(--gold);
-  margin-top: 16px;
   text-align: center;
   letter-spacing: 0.02em;
   text-shadow: 0 0 20px var(--gold-glow);

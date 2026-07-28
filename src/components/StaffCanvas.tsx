@@ -117,7 +117,6 @@ function StaffCanvasImpl(props: StaffCanvasProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        key={`${note?.midi ?? 'idle'}-${answerState}-${songCurrentIndex}`}
       >
         {/* VexFlow render target — must not contain React-managed children */}
         <div ref={containerRef} className="staff-canvas__vexflow" />
@@ -126,27 +125,32 @@ function StaffCanvasImpl(props: StaffCanvasProps) {
         )}
       </motion.div>
 
-      {!showIdle && (showLabel || alwaysShowLabel || flashLabel) && labelNote && !chordName && (
-        <motion.div
-          className={`staff-note-label ${labelColorClass}`}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-        >
-          {labelNote.name}{labelNote.octave}
-        </motion.div>
-      )}
+      {/* Note label — absolutely positioned so it never shifts the staff layout */}
+      <div className="staff-canvas__label-slot">
+        {!showIdle && (showLabel || alwaysShowLabel || flashLabel) && labelNote && !chordName && (
+          <motion.div
+            className={`staff-note-label ${labelColorClass}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {labelNote.name}{labelNote.octave}
+          </motion.div>
+        )}
 
-      {!showIdle && chordName && (answerState === 'correct' || answerState === 'revealed') && (
-        <motion.div
-          className="staff-note-label staff-note-label--sage"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-        >
-          {chordName}
-        </motion.div>
-      )}
+        {!showIdle && chordName && (answerState === 'correct' || answerState === 'revealed') && (
+          <motion.div
+            className="staff-note-label staff-note-label--sage"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {chordName}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }
