@@ -3,9 +3,14 @@
  * ============================================
  * 角落处低调的 MIDI 状态指示器，点击可展开为设备列表面板。
  * 状态：未连接（灰点）/ 连接中（金色脉冲点）/ 已连接（鼠尾草绿点）/ 错误（赤陶色点）。
+ *
+ * 面板可通过以下方式关闭：
+ * - 点击关闭按钮
+ * -点击面板外部区域
+ * - 再次点击 MIDI 指示器按钮
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { MidiDeviceInfo } from '../types';
 
@@ -31,6 +36,8 @@ export function MidiIndicator({
   onSelect,
 }: MidiIndicatorProps) {
   const [expanded, setExpanded] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const indicatorRef = useRef<HTMLButtonElement>(null);
 
   const stateClass = error
     ? 'midi-indicator--error'
@@ -50,9 +57,42 @@ export function MidiIndicator({
     setExpanded((prev) => !prev);
   };
 
+  const handleClose = () => {
+    setExpanded(false);
+  };
+
+  // 点击面板外部时关闭
+  useEffect(() => {
+    if (!expanded) return;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      // 如果点击的不是面板内部，也不是指示器按钮本身，则关闭
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        indicatorRef.current &&
+        !indicatorRef.current.contains(target)
+      ) {
+        setExpanded(false);
+      }
+    };
+
+    // 延迟绑定，避免触发面板展开的同一个点击事件
+    const timer = setTimeout(() => {
+      document.addEventListener('pointerdown', handlePointerDown);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [expanded]);
+
   return (
     <>
       <button
+        ref={indicatorRef}
         type="button"
         className={`midi-indicator ${stateClass}`}
         onClick={handleClick}
@@ -66,13 +106,26 @@ export function MidiIndicator({
       <AnimatePresence>
         {expanded && (
           <motion.div
+            ref={panelRef}
             className="midi-panel"
             initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="midi-panel__title">MIDI Devices</div>
+            <div className="midi-panel__header">
+              <div className="midi-panel__title">MIDI Devices</div>
+              <button
+                type="button"
+                className="midi-panel__close"
+                onClick={handleClose}
+                aria-label="Close MIDI panel"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
 
             {!supported ? (
               <div className="midi-panel__error">

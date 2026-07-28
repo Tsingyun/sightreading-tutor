@@ -148,10 +148,10 @@ export function renderStaff(options: RenderOptions): void {
   // —— 固定尺寸渲染 ——
   // 无论单音还是和弦，均使用相同的 scale 和 height，
   // 避免音符数量变化时 SVG 尺寸跳变导致屏幕闪烁。
-  const scale = 2.5;
-  const svgWidth = container.clientWidth || 600;
+  const scale = 3.0;
+  const svgWidth = container.clientWidth || 800;
   const drawWidth = svgWidth / scale;
-  const svgHeight = 170 * scale;
+  const svgHeight = 130 * scale;
 
   // 创建 SVG 渲染器
   const renderer = new Renderer(container, Renderer.Backends.SVG);
@@ -163,7 +163,7 @@ export function renderStaff(options: RenderOptions): void {
   // 创建谱表
   const staveX = 18;
   const staveWidth = drawWidth - 36;
-  const staveY = 50;
+  const staveY = 30;
   const stave = new Stave(staveX, staveY, staveWidth);
 
   // 确定谱号：和弦模式取第一个音符的谱号
@@ -271,10 +271,10 @@ export function renderGrandStaff(options: RenderOptions): void {
   // —— 固定尺寸渲染 ——
   // 无论单音还是多音和弦，均使用相同的 scale 和 height，
   // 避免自由弹奏时音符数量变化导致五线谱尺寸跳变和闪烁。
-  const scale = 2.5;
-  const svgWidth = container.clientWidth || 600;
+  const scale = 3.0;
+  const svgWidth = container.clientWidth || 800;
   const drawWidth = svgWidth / scale;
-  const svgHeight = 200 * scale;
+  const svgHeight = 160 * scale;
 
   const renderer = new Renderer(container, Renderer.Backends.SVG);
   renderer.resize(svgWidth, svgHeight);
@@ -286,7 +286,7 @@ export function renderGrandStaff(options: RenderOptions): void {
   const staveWidth = drawWidth - 44;
 
   // 高音谱表
-  const trebleStave = new Stave(staveX, 45, staveWidth);
+  const trebleStave = new Stave(staveX, 25, staveWidth);
   trebleStave.addClef('treble');
   if (options.keySignature && options.keySignature !== 'C') {
     trebleStave.addKeySignature(options.keySignature);
@@ -296,7 +296,7 @@ export function renderGrandStaff(options: RenderOptions): void {
   trebleStave.draw();
 
   // 低音谱表
-  const bassStave = new Stave(staveX, 140, staveWidth);
+  const bassStave = new Stave(staveX, 105, staveWidth);
   bassStave.addClef('bass');
   if (options.keySignature && options.keySignature !== 'C') {
     bassStave.addKeySignature(options.keySignature);
@@ -310,8 +310,8 @@ export function renderGrandStaff(options: RenderOptions): void {
   context.setStrokeStyle(themeColors.staffColor);
   context.setLineWidth(2);
   context.beginPath();
-  context.moveTo(staveX, 45);
-  context.lineTo(staveX, 180);
+  context.moveTo(staveX, 25);
+  context.lineTo(staveX, 145);
   context.stroke();
   context.restore();
 
@@ -370,7 +370,7 @@ export function renderGrandStaff(options: RenderOptions): void {
     || (options.flashLabel && !options.alwaysShowLabel);
   if (shouldShowLabelGrand && renderNotes.length === 1) {
     const centerX = staveX + staveWidth / 2;
-    const labelY = renderNotes[0].clef === 'treble' ? 45 : 140;
+    const labelY = renderNotes[0].clef === 'treble' ? 25 : 105;
     const labelColor = (answerState === 'pending' || options.flashLabel) ? themeColors.noteDefault : themeColors.noteCorrect;
     drawNoteLabel(context, renderNotes[0], centerX, labelY, labelColor);
   }
@@ -379,7 +379,7 @@ export function renderGrandStaff(options: RenderOptions): void {
     const centerX = staveX + staveWidth / 2;
     // 和弦名称画在有音符的谱表上方，优先高音谱表
     const labelClef = trebleNotes.length > 0 ? 'treble' : 'bass';
-    const labelY = labelClef === 'treble' ? 45 : 140;
+    const labelY = labelClef === 'treble' ? 25 : 105;
     drawChordLabel(context, options.chordName, centerX, labelY, themeColors.noteCorrect);
   }
 }
@@ -415,10 +415,10 @@ export function renderSongStaff(options: SongRenderOptions): void {
   const windowNotes = notes.slice(start, end);
   const relativeIndex = currentIndex - start;
 
-  const scale = 2.5;
-  const svgWidth = container.clientWidth || 600;
+  const scale = 3.0;
+  const svgWidth = container.clientWidth || 800;
   const drawWidth = svgWidth / scale;
-  const svgHeight = 200 * scale;
+  const svgHeight = 150 * scale;
 
   const renderer = new Renderer(container, Renderer.Backends.SVG);
   renderer.resize(svgWidth, svgHeight);
@@ -428,7 +428,7 @@ export function renderSongStaff(options: SongRenderOptions): void {
 
   const staveX = 18;
   const staveWidth = drawWidth - 36;
-  const staveY = 60;
+  const staveY = 35;
   const stave = new Stave(staveX, staveY, staveWidth);
 
   // 谱号取当前音符的谱号

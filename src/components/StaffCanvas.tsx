@@ -28,11 +28,11 @@ export interface StaffCanvasProps {
 }
 
 const NOCTURNE_COLORS: ThemeColors = {
-  staffColor: '#5C584F',
+  staffColor: '#3A3528',
   bgColor: 'transparent',
-  noteDefault: '#E8E4DC',
-  noteCorrect: '#7CB069',
-  noteWrong: '#C76B6B',
+  noteDefault: '#2A2620',
+  noteCorrect: '#5A9E45',
+  noteWrong: '#C25E5E',
 };
 
 function StaffCanvasImpl(props: StaffCanvasProps) {

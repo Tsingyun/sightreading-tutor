@@ -1,7 +1,7 @@
 /* ============================================
-   NOCTURNE — Design System
+   NOCTURNE — Design System (Light Edition)
    "A music notation learning experience"
-   - Deep warm-black canvas with antique gold
+   - Warm cream canvas with antique gold accents
    - Fraunces (serif) + Sora (sans) + JetBrains Mono
    - Organic motion, contextual overlays, full-screen spaces
    ============================================ */
@@ -20,44 +20,44 @@
 
 /* ========== Design Tokens ========== */
 :root {
-  /* — Background: deep warm-black — */
-  --bg-base: #0A0B0F;
-  --bg-deep: #060709;
-  --bg-elevated: #11131A;
-  --bg-surface: rgba(255, 255, 255, 0.03);
-  --bg-surface-hover: rgba(255, 255, 255, 0.06);
-  --bg-glass: rgba(17, 19, 26, 0.7);
-  --bg-glass-strong: rgba(17, 19, 26, 0.92);
+  /* — Background: warm cream (light theme) — */
+  --bg-base: #F6F2EA;
+  --bg-deep: #FFFFFF;
+  --bg-elevated: #FFFCF7;
+  --bg-surface: rgba(0, 0, 0, 0.04);
+  --bg-surface-hover: rgba(0, 0, 0, 0.07);
+  --bg-glass: rgba(255, 252, 247, 0.82);
+  --bg-glass-strong: rgba(255, 252, 247, 0.96);
 
   /* — Accents: ink & gold — */
-  --gold: #C9A961;
-  --gold-bright: #E0C27E;
-  --gold-dim: #8A7542;
-  --gold-glow: rgba(201, 169, 97, 0.2);
-  --blue: #6B9AC4;
-  --blue-dim: #4A7A9E;
-  --sage: #7CB069;
-  --sage-dim: #5A8A4E;
-  --terracotta: #C76B6B;
-  --terracotta-dim: #9E5454;
+  --gold: #B8954A;
+  --gold-bright: #D4B57A;
+  --gold-dim: #8A6E30;
+  --gold-glow: rgba(184, 149, 74, 0.2);
+  --blue: #4A7FA8;
+  --blue-dim: #356A8F;
+  --sage: #5A9E45;
+  --sage-dim: #447A33;
+  --terracotta: #C25E5E;
+  --terracotta-dim: #9A4848;
 
-  /* — Text: warm whites — */
-  --fg-primary: #E8E4DC;
-  --fg-secondary: #9A958A;
-  --fg-tertiary: #5C584F;
-  --fg-faint: #363330;
+  /* — Text: dark inks (light theme) — */
+  --fg-primary: #2A2620;
+  --fg-secondary: #5A544A;
+  --fg-tertiary: #8A847A;
+  --fg-faint: #B0AAA0;
 
   /* — Borders — */
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-default: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --border-gold: rgba(201, 169, 97, 0.3);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.16);
+  --border-gold: rgba(184, 149, 74, 0.35);
 
   /* — Shadows — */
-  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-deep: 0 8px 48px rgba(0, 0, 0, 0.6);
-  --shadow-gold: 0 0 40px rgba(201, 169, 97, 0.15);
-  --shadow-blue: 0 0 40px rgba(107, 154, 196, 0.15);
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-deep: 0 8px 48px rgba(0, 0, 0, 0.12);
+  --shadow-gold: 0 0 40px rgba(184, 149, 74, 0.15);
+  --shadow-blue: 0 0 40px rgba(74, 127, 168, 0.12);
 
   /* — Typography — */
   --font-display: 'Fraunces', 'Noto Serif SC', 'Songti SC', serif;
@@ -83,6 +83,9 @@
   /* — Layout — */
   --max-w: 1440px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* — Text on gold/colored backgrounds — */
+  --fg-on-accent: #2A2620;
 }
 
 /* ========== Reset ========== */
@@ -116,8 +119,8 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: var(--r-full); }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: var(--r-full); }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
 /* Selection */
@@ -174,7 +177,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: radial-gradient(ellipse 80% 60% at 50% 40%, transparent 0%, var(--bg-base) 95%);
+  background: radial-gradient(ellipse 100% 80% at 50% 40%, transparent 0%, rgba(0, 0, 0, 0.04) 100%);
 }
 
 /* ============================================
@@ -519,7 +522,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
    ============================================ */
 .staff-canvas {
   width: 100%;
-  max-width: 720px;
+  max-width: 1100px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -528,7 +531,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .staff-canvas__container {
   width: 100%;
-  min-height: 180px;
+  min-height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -545,7 +548,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 .staff-canvas__container svg {
   width: 100% !important;
   height: auto !important;
-  max-height: 240px;
+  max-height: 500px;
 }
 
 .staff-canvas__idle {
@@ -622,27 +625,27 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 .piano-key:last-child { border-right: none; }
 
 .piano-key--white {
-  background: linear-gradient(180deg, #1A1C24 0%, #131520 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #ECE8E0 100%);
 }
 
 .piano-key--white:hover {
-  background: linear-gradient(180deg, #22242E 0%, #1A1C26 100%);
+  background: linear-gradient(180deg, #FAF8F4 0%, #E0DCD4 100%);
 }
 
 .piano-key--white.active,
 .piano-key--white.pressed {
-  background: linear-gradient(180deg, var(--gold-dim) 0%, #6B5A30 100%);
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
   box-shadow: inset 0 -3px 12px var(--gold-glow), 0 0 20px var(--gold-glow);
 }
 
 .piano-key--white.correct {
-  background: linear-gradient(180deg, var(--sage-dim) 0%, #3D5A34 100%);
-  box-shadow: inset 0 -3px 12px rgba(124, 176, 105, 0.3), 0 0 20px rgba(124, 176, 105, 0.2);
+  background: linear-gradient(180deg, #8DDC74 0%, var(--sage-dim) 100%);
+  box-shadow: inset 0 -3px 12px rgba(90, 158, 69, 0.3), 0 0 20px rgba(90, 158, 69, 0.2);
 }
 
 .piano-key--white.wrong {
-  background: linear-gradient(180deg, var(--terracotta-dim) 0%, #5A3030 100%);
-  box-shadow: inset 0 -3px 12px rgba(199, 107, 107, 0.3), 0 0 20px rgba(199, 107, 107, 0.2);
+  background: linear-gradient(180deg, #E08888 0%, var(--terracotta-dim) 100%);
+  box-shadow: inset 0 -3px 12px rgba(194, 94, 94, 0.3), 0 0 20px rgba(194, 94, 94, 0.2);
 }
 
 /* Black keys overlay */
@@ -651,8 +654,8 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   top: 0;
   width: 5.5%;
   height: 60%;
-  background: linear-gradient(180deg, #060709 0%, #0A0B0F 100%);
-  border: 1px solid var(--border-default);
+  background: linear-gradient(180deg, #2A2620 0%, #1A1814 100%);
+  border: 1px solid var(--border-strong);
   border-top: none;
   border-radius: 0 0 var(--r-sm) var(--r-sm);
   z-index: 2;
@@ -661,18 +664,18 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .piano-key--black.active,
 .piano-key--black.pressed {
-  background: linear-gradient(180deg, var(--gold-dim) 0%, #4A3E20 100%);
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
   box-shadow: 0 0 16px var(--gold-glow);
 }
 
 .piano-key--black.correct {
-  background: linear-gradient(180deg, var(--sage-dim) 0%, #2D4226 100%);
-  box-shadow: 0 0 16px rgba(124, 176, 105, 0.2);
+  background: linear-gradient(180deg, var(--sage) 0%, var(--sage-dim) 100%);
+  box-shadow: 0 0 16px rgba(90, 158, 69, 0.3);
 }
 
 .piano-key--black.wrong {
-  background: linear-gradient(180deg, var(--terracotta-dim) 0%, #422525 100%);
-  box-shadow: 0 0 16px rgba(199, 107, 107, 0.2);
+  background: linear-gradient(180deg, var(--terracotta) 0%, var(--terracotta-dim) 100%);
+  box-shadow: 0 0 16px rgba(194, 94, 94, 0.3);
 }
 
 .piano-keyboard__label {
@@ -685,12 +688,13 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 /* ============================================
    FEEDBACK OVERLAY — Contextual Practice Feedback
+   Positioned below the top bar, away from the staff
    ============================================ */
 .feedback-overlay {
   position: absolute;
-  top: 50%;
+  top: 72px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 8;
   pointer-events: none;
   display: flex;
@@ -769,13 +773,13 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .feedback-btn--primary {
   background: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
   border-color: var(--gold);
 }
 
 .feedback-btn--primary:hover {
   background: var(--gold-bright);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
 }
 
 /* ============================================
@@ -956,7 +960,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .pill--active {
   background: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
 }
 
 .pill:hover:not(.pill--active) {
@@ -1113,12 +1117,35 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   border: 1px solid var(--border-default);
 }
 
+.midi-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .midi-panel__title {
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 400;
-  margin-bottom: 12px;
   color: var(--fg-primary);
+}
+
+.midi-panel__close {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-tertiary);
+  transition: all var(--t-fast) var(--ease-out-expo);
+  flex-shrink: 0;
+}
+
+.midi-panel__close:hover {
+  color: var(--terracotta);
+  background: rgba(216, 120, 120, 0.1);
 }
 
 .midi-panel__device {
@@ -1148,7 +1175,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   padding: 10px;
   border-radius: var(--r-sm);
   background: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 500;
@@ -1235,7 +1262,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: rgba(6, 7, 9, 0.92);
+  background: rgba(246, 242, 234, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
@@ -1303,7 +1330,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .onboarding__btn--primary {
   background: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
 }
 
 .onboarding__btn--primary:hover {
@@ -1430,7 +1457,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .review-btn--primary {
   background: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
 }
 
 .review-btn--primary:hover {
@@ -1564,7 +1591,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 .rhythm-beat--active {
   background: var(--gold);
   border-color: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
   box-shadow: 0 0 24px var(--gold-glow);
   transform: scale(1.15);
 }
@@ -1597,7 +1624,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 .rhythm-note-block--active {
   background: var(--gold);
   border-color: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
   box-shadow: 0 0 16px var(--gold-glow);
 }
 
@@ -1650,7 +1677,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   height: 120px;
   border-radius: 50%;
   background: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 400;
@@ -1800,7 +1827,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   padding: 16px 56px;
   border-radius: var(--r-full);
   background: var(--gold);
-  color: var(--bg-deep);
+  color: var(--fg-on-accent);
   transition: all var(--t-normal) var(--ease-out-expo);
   box-shadow: var(--shadow-gold);
 }

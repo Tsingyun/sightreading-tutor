@@ -87,7 +87,7 @@ export function AuroraBackground() {
 
       ctx.clearRect(0, 0, width, height);
 
-      // 绘制径向渐变背景
+      // 绘制径向渐变背景 (light theme: soft warm glow)
       const grad = ctx.createRadialGradient(
         mouseRef.current.x,
         mouseRef.current.y,
@@ -96,9 +96,9 @@ export function AuroraBackground() {
         mouseRef.current.y,
         Math.max(width, height) * 0.6,
       );
-      grad.addColorStop(0, 'rgba(201, 169, 97, 0.025)');
-      grad.addColorStop(0.5, 'rgba(107, 154, 196, 0.01)');
-      grad.addColorStop(1, 'rgba(10, 11, 15, 0)');
+      grad.addColorStop(0, 'rgba(184, 149, 74, 0.05)');
+      grad.addColorStop(0.5, 'rgba(74, 127, 168, 0.02)');
+      grad.addColorStop(1, 'rgba(246, 242, 234, 0)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
 
@@ -124,10 +124,10 @@ export function AuroraBackground() {
         const drawX = p.x + parallaxX;
         const drawY = p.y + parallaxY;
 
-        // 绘制粒子（带光晕）
+        // 绘制粒子（带光晕）— warm gold on light background
         ctx.beginPath();
         ctx.arc(drawX, drawY, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(201, 169, 97, ${p.opacity})`;
+        ctx.fillStyle = `rgba(184, 149, 74, ${p.opacity * 0.6})`;
         ctx.fill();
 
         // 光晕
@@ -135,8 +135,8 @@ export function AuroraBackground() {
           ctx.beginPath();
           ctx.arc(drawX, drawY, p.radius * 3, 0, Math.PI * 2);
           const glow = ctx.createRadialGradient(drawX, drawY, 0, drawX, drawY, p.radius * 3);
-          glow.addColorStop(0, `rgba(201, 169, 97, ${p.opacity * 0.15})`);
-          glow.addColorStop(1, 'rgba(201, 169, 97, 0)');
+          glow.addColorStop(0, `rgba(184, 149, 74, ${p.opacity * 0.12})`);
+          glow.addColorStop(1, 'rgba(184, 149, 74, 0)');
           ctx.fillStyle = glow;
           ctx.fill();
         }

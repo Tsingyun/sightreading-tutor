@@ -96,7 +96,7 @@ export function TrainingArena({ training }: TrainingArenaProps) {
         />
       </div>
 
-      {/* Active controls when training */}
+      {/* Active controls when training — positioned top-left to avoid staff overlap */}
       {isTraining && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -104,8 +104,7 @@ export function TrainingArena({ training }: TrainingArenaProps) {
           style={{
             position: 'absolute',
             top: '72px',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: '28px',
             zIndex: 12,
             display: 'flex',
             gap: '8px',
