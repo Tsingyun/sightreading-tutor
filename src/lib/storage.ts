@@ -29,13 +29,13 @@ export const DEFAULT_STATS: TrainingStats = {
 export const DEFAULT_CONFIG: TrainingConfig = {
   clef: 'treble',
   lowNote: 60,
-  highNote: 67,
+  highNote: 72,
   includeAccidentals: false,
   autoNextOnError: false,
   mode: 'single',
   chordSize: 3,
   difficultyLevel: 1,
-  showNoteLabel: true,
+  showNoteLabel: false,
   keySignature: 'C',
 };
 

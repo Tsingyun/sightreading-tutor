@@ -140,3 +140,30 @@ export interface IdentifiedChord {
   /** 音程名称（仅2音符时有效，如"大三度"） */
   intervalName: string;
 }
+
+// ============================================
+// Nocturne — 新增类型
+// ============================================
+
+/** 屏幕状态：Hub 门户 → Arena 练习 → Review 总结 */
+export type Screen = 'hub' | 'arena' | 'review';
+
+/** 会话统计数据（用于 Review 屏幕） */
+export interface SessionStats {
+  mode: AppMode;
+  correct: number;
+  total: number;
+  streak: number;
+  bestStreak: number;
+  avgReactionTime: number;
+  duration: number;
+}
+
+/** Toast 通知项 */
+export interface ToastItem {
+  id: string;
+  variant: 'gold' | 'sage';
+  icon: string;
+  title: string;
+  message: string;
+}

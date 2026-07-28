@@ -373,10 +373,10 @@ export const DIFFICULTY_LEVELS: DifficultyLevelConfig[] = [
   {
     level: 1,
     name: '入门',
-    desc: 'C D E F G 五个音',
+    desc: 'C D E F G A B C 八个音',
     clef: 'treble',
     lowNote: 60,
-    highNote: 67,
+    highNote: 72,
     includeAccidentals: false,
   },
   {
