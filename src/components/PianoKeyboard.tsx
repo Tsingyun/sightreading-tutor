@@ -43,9 +43,21 @@ function PianoKeyboardImpl(props: PianoKeyboardProps) {
     disabled = false,
   } = props;
 
+  // Snap the range to white-key boundaries so the keyboard always
+  // starts and ends on a white key (a real piano never starts on a black key).
+  const snapToWhite = (midi: number, dir: 1 | -1): number => {
+    let m = midi;
+    while (BLACK_KEY_PATTERNS.has(((m % 12) + 12) % 12)) {
+      m += dir;
+    }
+    return m;
+  };
+  const rangeLow = snapToWhite(range.low, -1);
+  const rangeHigh = snapToWhite(range.high, 1);
+
   // Generate all keys in range
   const allKeys: number[] = [];
-  for (let m = range.low; m <= range.high; m++) {
+  for (let m = rangeLow; m <= rangeHigh; m++) {
     allKeys.push(m);
   }
 
@@ -81,34 +93,24 @@ function PianoKeyboardImpl(props: PianoKeyboardProps) {
     [disabled, onKeyPress],
   );
 
-  // Calculate black key positions
+  // Calculate black key positions.
+  // A black key always sits exactly on the right edge of the white key just
+  // below it. whiteKeys is sorted ascending by MIDI, so we find the last white
+  // key whose MIDI value is below this black key, then center the black key on
+  // that white key's right boundary.
   const getBlackKeyStyle = (midi: number): React.CSSProperties => {
-    const pitchClass = ((midi % 12) + 12) % 12;
-    // Find the white key index that this black key sits after
-    // C# sits between C and D, D# between D and E, etc.
-    const blackKeyWhiteIndex: Record<number, number> = {
-      1: 0, // C# after C (index 0)
-      3: 1, // D# after D (index 1)
-      6: 3, // F# after F (index 3)
-      8: 4, // G# after G (index 4)
-      10: 5, // A# after A (index 5)
-    };
-
-    // Find which white key in our range corresponds
-    const octave = Math.floor(midi / 12) - 1;
-    const baseMidi = 12 * (octave + 1); // C of this octave
-    const whiteOffset = blackKeyWhiteIndex[pitchClass];
-
-    // Count white keys from range.low to the position
-    let whiteIndex = 0;
-    for (let m = range.low; m < baseMidi + whiteOffset; m++) {
-      if (!BLACK_KEY_PATTERNS.has(((m % 12) + 12) % 12)) {
-        whiteIndex++;
+    let whiteBelowIndex = -1;
+    for (let i = 0; i < whiteKeys.length; i++) {
+      if (whiteKeys[i] < midi) {
+        whiteBelowIndex = i;
+      } else {
+        break;
       }
     }
 
-    const leftPercent = ((whiteIndex + 1) / whiteKeys.length) * 100;
-    const keyWidth = (1 / whiteKeys.length) * 100;
+    const whiteCount = whiteKeys.length;
+    const leftPercent = ((whiteBelowIndex + 1) / whiteCount) * 100;
+    const keyWidth = (1 / whiteCount) * 100;
     const blackKeyWidth = keyWidth * 0.55;
     return {
       left: `calc(${leftPercent}% - ${blackKeyWidth / 2}%)`,

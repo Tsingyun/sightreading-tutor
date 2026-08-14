@@ -79,9 +79,16 @@ export function Arena(props: ArenaProps) {
     }
   };
 
+  // Keyboard range: in training mode the keyboard must cover the exact note
+  // range being quizzed (so e.g. bass/both clef low notes are playable on screen).
+  const keyboardRange =
+    mode === 'training'
+      ? { low: training.config.lowNote, high: training.config.highNote }
+      : KEYBOARD_RANGE[mode];
+
   // Keyboard state for PianoKeyboard component
   const keyboardProps = {
-    range: KEYBOARD_RANGE[mode],
+    range: keyboardRange,
     onKeyPress: onVirtualKeyPress,
     disabled: mode === 'rhythm',
     activeNotes: mode === 'freeplay' ? freePlay.activeNotes : [],
