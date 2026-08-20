@@ -6,6 +6,7 @@
 
 import { motion, AnimatePresence } from 'motion/react';
 import { useEffect } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { UseRhythmReturn } from '../hooks/useRhythm';
 
 interface RhythmArenaProps {
@@ -13,6 +14,7 @@ interface RhythmArenaProps {
 }
 
 export function RhythmArena({ rhythm }: RhythmArenaProps) {
+  const { t } = useLanguage();
   const {
     bpm,
     timeSignature,
@@ -59,13 +61,13 @@ export function RhythmArena({ rhythm }: RhythmArenaProps) {
               className={`pill ${mode === 'practice' ? 'pill--active' : ''}`}
               onClick={() => setMode('practice')}
             >
-              Practice
+              {t('rhythm.practice')}
             </button>
             <button
               className={`pill ${mode === 'challenge' ? 'pill--active' : ''}`}
               onClick={() => setMode('challenge')}
             >
-              Challenge
+              {t('rhythm.challenge')}
             </button>
           </div>
         </div>
@@ -113,7 +115,7 @@ export function RhythmArena({ rhythm }: RhythmArenaProps) {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               >
-                {lastTapResult}
+                {t(`rhythm.${lastTapResult}`)}
               </motion.div>
             )}
           </AnimatePresence>
@@ -123,7 +125,7 @@ export function RhythmArena({ rhythm }: RhythmArenaProps) {
         <div className="rhythm-controls">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <span className="rhythm-bpm-display">{bpm}</span>
-            <span className="rhythm-bpm-label">BPM</span>
+            <span className="rhythm-bpm-label">{t('rhythm.bpm')}</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -177,7 +179,7 @@ export function RhythmArena({ rhythm }: RhythmArenaProps) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
             >
-              {mode === 'challenge' ? 'Start Challenge' : 'Start Metronome'}
+              {mode === 'challenge' ? t('rhythm.startChallenge') : t('rhythm.startMetronome')}
             </motion.button>
           ) : (
             <>
@@ -187,17 +189,17 @@ export function RhythmArena({ rhythm }: RhythmArenaProps) {
                 whileTap={{ scale: 0.92 }}
                 disabled={mode === 'challenge' && challengePhase === 'playing'}
               >
-                TAP
+                {t('rhythm.tap')}
               </motion.button>
               <button className="feedback-btn feedback-btn--primary" onClick={stop}>
-                Stop
+                {t('rhythm.stop')}
               </button>
             </>
           )}
 
           {!isPlaying && pattern.length > 0 && (
             <button className="feedback-btn" onClick={playPattern}>
-              Preview
+              {t('rhythm.preview')}
             </button>
           )}
         </div>
@@ -209,14 +211,14 @@ export function RhythmArena({ rhythm }: RhythmArenaProps) {
             animate={{ opacity: 1 }}
             style={{ display: 'flex', gap: '24px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--fg-tertiary)' }}
           >
-            <span>Accuracy: <span style={{ color: 'var(--gold)' }}>{accuracy}%</span></span>
-            <span>Perfect: <span style={{ color: 'var(--sage)' }}>{stats.perfect}</span></span>
-            <span>Good: <span style={{ color: 'var(--gold)' }}>{stats.good}</span></span>
-            <span>OK: <span style={{ color: 'var(--blue)' }}>{stats.ok}</span></span>
-            <span>Miss: <span style={{ color: 'var(--terracotta)' }}>{stats.miss}</span></span>
+            <span>{t('rhythm.accuracy')}: <span style={{ color: 'var(--gold)' }}>{accuracy}%</span></span>
+            <span>{t('rhythm.perfect')}: <span style={{ color: 'var(--sage)' }}>{stats.perfect}</span></span>
+            <span>{t('rhythm.good')}: <span style={{ color: 'var(--gold)' }}>{stats.good}</span></span>
+            <span>{t('rhythm.ok')}: <span style={{ color: 'var(--blue)' }}>{stats.ok}</span></span>
+            <span>{t('rhythm.miss')}: <span style={{ color: 'var(--terracotta)' }}>{stats.miss}</span></span>
             {stats.total > 0 && (
               <button className="feedback-btn" onClick={resetStats} style={{ marginLeft: '8px' }}>
-                Reset
+                {t('rhythm.reset')}
               </button>
             )}
           </motion.div>
@@ -230,9 +232,9 @@ export function RhythmArena({ rhythm }: RhythmArenaProps) {
             style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontStyle: 'italic', color: 'var(--fg-secondary)' }}
           >
             {challengePhase === 'playing'
-              ? 'Listen carefully…'
+              ? t('rhythm.listen')
               : challengePhase === 'recording'
-                ? 'Now reproduce the rhythm!'
+                ? t('rhythm.reproduce')
                 : ''}
           </motion.div>
         )}

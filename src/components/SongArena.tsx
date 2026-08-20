@@ -8,6 +8,7 @@
 import { motion } from 'motion/react';
 import { StaffCanvas } from './StaffCanvas';
 import { SONG_LIBRARY } from '../lib/songLibrary';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { UseSongPracticeReturn } from '../hooks/useSongPractice';
 
 interface SongArenaProps {
@@ -15,6 +16,7 @@ interface SongArenaProps {
 }
 
 export function SongArena({ songPractice }: SongArenaProps) {
+  const { t } = useLanguage();
   const {
     currentSong,
     currentIndex,
@@ -43,7 +45,7 @@ export function SongArena({ songPractice }: SongArenaProps) {
           style={{ width: '100%', maxWidth: '800px' }}
         >
           <div className="training-start" style={{ marginBottom: '32px' }}>
-            <div className="training-start__title">Choose a piece to perform</div>
+            <div className="training-start__title">{t('song.choose')}</div>
           </div>
           <div className="song-library">
             {SONG_LIBRARY.map((song) => (
@@ -116,13 +118,13 @@ export function SongArena({ songPractice }: SongArenaProps) {
                 className={`pill ${isFollowMode ? 'pill--active' : ''}`}
                 onClick={() => setFollowMode(true)}
               >
-                Follow
+                {t('song.follow')}
               </button>
               <button
                 className={`pill ${!isFollowMode ? 'pill--active' : ''}`}
                 onClick={() => setFollowMode(false)}
               >
-                Auto
+                {t('song.auto')}
               </button>
             </div>
 
@@ -145,17 +147,17 @@ export function SongArena({ songPractice }: SongArenaProps) {
                 className="feedback-btn feedback-btn--primary"
                 onClick={isPlaying ? pause : play}
               >
-                {isPlaying ? 'Pause' : 'Play'}
+                {isPlaying ? t('song.pause') : t('song.play')}
               </button>
             )}
             <button className="feedback-btn" onClick={reset}>
-              Restart
+              {t('song.restart')}
             </button>
             <button
               className="feedback-btn"
               onClick={() => loadSong(currentSong)}
             >
-              Back to Library
+              {t('song.backToLibrary')}
             </button>
           </div>
 
@@ -172,9 +174,9 @@ export function SongArena({ songPractice }: SongArenaProps) {
                 color: 'var(--fg-tertiary)',
               }}
             >
-              <span>Correct: <span style={{ color: 'var(--sage)' }}>{stats.correct}</span></span>
-              <span>Wrong: <span style={{ color: 'var(--terracotta)' }}>{stats.wrong}</span></span>
-              <span>Progress: <span style={{ color: 'var(--gold)' }}>{progress}%</span></span>
+              <span>{t('song.correct')}: <span style={{ color: 'var(--sage)' }}>{stats.correct}</span></span>
+              <span>{t('song.wrong')}: <span style={{ color: 'var(--terracotta)' }}>{stats.wrong}</span></span>
+              <span>{t('song.progress')}: <span style={{ color: 'var(--gold)' }}>{progress}%</span></span>
             </motion.div>
           )}
         </div>

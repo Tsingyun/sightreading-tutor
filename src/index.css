@@ -201,6 +201,18 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   position: relative;
 }
 
+/* — Hub top bar: language toggle (top-right) — */
+.hub-topbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  z-index: 20;
+}
+
 .hub-masthead__pretitle {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -503,6 +515,44 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 .arena-icon-btn--active {
   color: var(--gold);
   border-color: var(--border-gold);
+}
+
+/* — Language Toggle (top): 中 / EN — */
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: var(--r-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--fg-tertiary);
+  transition: all var(--t-normal) var(--ease-out-expo);
+}
+
+.language-toggle:hover {
+  color: var(--gold);
+  border-color: var(--border-gold);
+  background: var(--bg-surface-hover);
+}
+
+.language-toggle__opt {
+  color: var(--fg-tertiary);
+  transition: color var(--t-fast) var(--ease-out-expo);
+}
+
+.language-toggle__opt.is-active {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.language-toggle__sep {
+  color: var(--fg-faint);
+  font-weight: 300;
 }
 
 /* — Arena Content Area — */

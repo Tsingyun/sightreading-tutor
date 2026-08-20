@@ -14,6 +14,8 @@
 import { motion, AnimatePresence } from 'motion/react';
 import type { CSSProperties } from 'react';
 import type { AppMode } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 
 interface HubProps {
   onSelectMode: (mode: AppMode) => void;
@@ -25,8 +27,6 @@ interface HubProps {
 interface PortalConfig {
   mode: AppMode;
   number: string;
-  name: string;
-  desc: string;
   icon: string;
   color: string;
 }
@@ -41,38 +41,10 @@ interface PortalCardStyle extends CSSProperties {
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
 const PORTALS: PortalConfig[] = [
-  {
-    mode: 'training',
-    number: '01',
-    name: 'Sight Reading',
-    desc: 'Identify notes on the staff',
-    icon: '♪',
-    color: '#C9A961',
-  },
-  {
-    mode: 'freeplay',
-    number: '02',
-    name: 'Free Play',
-    desc: 'Explore chords & intervals',
-    icon: '♫',
-    color: '#6B9AC4',
-  },
-  {
-    mode: 'rhythm',
-    number: '03',
-    name: 'Rhythm',
-    desc: 'Master timing & pulse',
-    icon: '♩',
-    color: '#7CB069',
-  },
-  {
-    mode: 'song',
-    number: '04',
-    name: 'Repertoire',
-    desc: 'Play classical melodies',
-    icon: '𝄞',
-    color: '#C76B6B',
-  },
+  { mode: 'training', number: '01', icon: '♪', color: '#C9A961' },
+  { mode: 'freeplay', number: '02', icon: '♫', color: '#6B9AC4' },
+  { mode: 'rhythm', number: '03', icon: '♩', color: '#7CB069' },
+  { mode: 'song', number: '04', icon: '𝄞', color: '#C76B6B' },
 ];
 
 /** 将 #RRGGBB 转为 rgba 字符串 */
@@ -108,16 +80,21 @@ export function Hub({
   totalSessions,
   totalCorrect,
 }: HubProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="screen-hub">
+      {/* 语言切换：置于顶部右上角 */}
+      <div className="hub-topbar">
+        <LanguageToggle />
+      </div>
+
       <header className="hub-masthead">
         <p className="hub-masthead__pretitle">NOCTURNE CONSERVATORY</p>
         <h1 className="hub-masthead__title">
           Sight Reading <em>Reimagined</em>
         </h1>
-        <p className="hub-masthead__subtitle">
-          A nocturnal journey through musical notation. Choose your path.
-        </p>
+        <p className="hub-masthead__subtitle">{t('hub.subtitle')}</p>
       </header>
 
       {/* 门户网格：父级 CSS fade-up 提供整体淡入，motion 负责子卡片错峰入场 */}
@@ -144,7 +121,7 @@ export function Hub({
               style={style}
               role="button"
               tabIndex={0}
-              aria-label={`${portal.name} — ${portal.desc}`}
+              aria-label={`${t('hub.mode.' + portal.mode)} — ${t('hub.modeDesc.' + portal.mode)}`}
               variants={{
                 hidden: { opacity: 0, y: 24 },
                 visible: {
@@ -168,8 +145,8 @@ export function Hub({
                 {portal.icon}
               </span>
               <div className="portal__label">
-                <h2 className="portal__name">{portal.name}</h2>
-                <p className="portal__desc">{portal.desc}</p>
+                <h2 className="portal__name">{t('hub.mode.' + portal.mode)}</h2>
+                <p className="portal__desc">{t('hub.modeDesc.' + portal.mode)}</p>
               </div>
               <span className="portal__arrow" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none">
@@ -188,15 +165,15 @@ export function Hub({
 
       <div className="hub-stats">
         <div className="hub-stat">
-          <span>BEST STREAK:</span>
+          <span>{`${t('hub.stat.bestStreak')}:`}</span>
           <AnimatedStatValue value={allTimeBestStreak} />
         </div>
         <div className="hub-stat">
-          <span>SESSIONS:</span>
+          <span>{`${t('hub.stat.sessions')}:`}</span>
           <AnimatedStatValue value={totalSessions} />
         </div>
         <div className="hub-stat">
-          <span>NOTES MASTERED:</span>
+          <span>{`${t('hub.stat.notesMastered')}:`}</span>
           <AnimatedStatValue value={totalCorrect} />
         </div>
       </div>

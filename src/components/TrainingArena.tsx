@@ -7,6 +7,7 @@
 import { motion } from 'motion/react';
 import { StaffCanvas } from './StaffCanvas';
 import { FeedbackOverlay } from './FeedbackOverlay';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { UseTrainingReturn } from '../hooks/useTraining';
 import { getKeySignatureConfig } from '../lib/music';
 
@@ -15,6 +16,7 @@ interface TrainingArenaProps {
 }
 
 export function TrainingArena({ training }: TrainingArenaProps) {
+  const { t } = useLanguage();
   const {
     currentNote,
     currentChord,
@@ -49,8 +51,8 @@ export function TrainingArena({ training }: TrainingArenaProps) {
         >
           <div className="training-start__title">
             {config.mode === 'chord'
-              ? 'Chord identification awaits'
-              : 'Identify the note on the staff'}
+              ? t('training.startTitleChord')
+              : t('training.startTitleSingle')}
           </div>
           <motion.button
             className="training-start__btn"
@@ -58,7 +60,7 @@ export function TrainingArena({ training }: TrainingArenaProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
           >
-            Begin
+            {t('training.begin')}
           </motion.button>
         </motion.div>
       </div>
@@ -110,8 +112,8 @@ export function TrainingArena({ training }: TrainingArenaProps) {
             gap: '8px',
           }}
         >
-          <button className="feedback-btn" onClick={skipQuestion}>Skip</button>
-          <button className="feedback-btn" onClick={stopTraining}>End</button>
+          <button className="feedback-btn" onClick={skipQuestion}>{t('training.skip')}</button>
+          <button className="feedback-btn" onClick={stopTraining}>{t('training.end')}</button>
         </motion.div>
       )}
     </>

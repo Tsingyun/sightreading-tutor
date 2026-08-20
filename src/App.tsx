@@ -30,6 +30,7 @@ import { useRhythm } from './hooks/useRhythm';
 import { usePianoSound } from './hooks/usePianoSound';
 import { loadGuideSeen, saveGuideSeen, loadBestStreak, loadStats } from './lib/storage';
 import type { AppMode, Screen, SessionStats, ToastItem } from './types';
+import { useLanguage } from './i18n/LanguageContext';
 
 function App() {
   // — Screen state —
@@ -38,6 +39,7 @@ function App() {
   const [onboardingVisible, setOnboardingVisible] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [sessionStats, setSessionStats] = useState<SessionStats | null>(null);
+  const { t } = useLanguage();
 
   // — Hooks (all instantiated at root for MIDI routing) —
   const midi = useMidi();
@@ -75,8 +77,8 @@ function App() {
       addToast({
         variant: 'gold',
         icon: '★',
-        title: 'Milestone Reached',
-        message: `${training.milestoneValue} notes practiced!`,
+        title: t('app.milestoneTitle'),
+        message: t('app.milestoneMessage', { n: training.milestoneValue }),
       });
       training.dismissMilestone();
     }

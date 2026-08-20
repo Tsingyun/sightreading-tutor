@@ -8,6 +8,7 @@
 
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useLanguage } from '../i18n/LanguageContext';
 import type {
   TrainingConfig,
   ClefType,
@@ -51,6 +52,7 @@ function PillGroup({
   value: string | number;
   onSelect: (value: string) => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="pill-group">
       {options.map((opt) => (
@@ -59,7 +61,7 @@ function PillGroup({
           className={`pill ${opt.value === value ? 'pill--active' : ''}`}
           onClick={() => onSelect(String(opt.value))}
         >
-          {opt.label}
+          {t(opt.label)}
         </button>
       ))}
     </div>
@@ -104,17 +106,17 @@ function StarIcon() {
   );
 }
 
-/* ---------- 配置项常量 ---------- */
+/* ---------- 配置项常量（label 为 i18n key；数字 / 字母保持原值） ---------- */
 
 const CLEF_OPTIONS: PillOption[] = [
-  { value: 'treble', label: 'Treble' },
-  { value: 'bass', label: 'Bass' },
-  { value: 'both', label: 'Both' },
+  { value: 'treble', label: 'settings.clefTreble' },
+  { value: 'bass', label: 'settings.clefBass' },
+  { value: 'both', label: 'settings.clefBoth' },
 ];
 
 const MODE_OPTIONS: PillOption[] = [
-  { value: 'single', label: 'Single Note' },
-  { value: 'chord', label: 'Chord' },
+  { value: 'single', label: 'settings.modeSingle' },
+  { value: 'chord', label: 'settings.modeChord' },
 ];
 
 const CHORD_SIZE_OPTIONS: PillOption[] = [
@@ -140,6 +142,7 @@ export function SettingsDrawer({
   soundEnabled,
   onToggleSound,
 }: SettingsDrawerProps) {
+  const { t } = useLanguage();
   return (
     <AnimatePresence>
       {visible && (
@@ -170,19 +173,19 @@ export function SettingsDrawer({
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="settings-drawer__header">
-              <h2 className="settings-drawer__title">Settings</h2>
+              <h2 className="settings-drawer__title">{t('settings.title')}</h2>
               <button
                 type="button"
                 className="settings-drawer__close"
                 onClick={onClose}
-                aria-label="Close settings"
+                aria-label={t('settings.close')}
               >
                 <CloseIcon />
               </button>
             </div>
 
             {/* 1. 谱号 */}
-            <Section title="Clef">
+            <Section title={t('settings.clef')}>
               <PillGroup
                 options={CLEF_OPTIONS}
                 value={config.clef}
@@ -191,7 +194,7 @@ export function SettingsDrawer({
             </Section>
 
             {/* 2. 模式 */}
-            <Section title="Mode">
+            <Section title={t('settings.mode')}>
               <PillGroup
                 options={MODE_OPTIONS}
                 value={config.mode}
@@ -201,7 +204,7 @@ export function SettingsDrawer({
 
             {/* 3. 和弦大小（仅和弦模式） */}
             {config.mode === 'chord' && (
-              <Section title="Chord Size">
+              <Section title={t('settings.chordSize')}>
                 <PillGroup
                   options={CHORD_SIZE_OPTIONS}
                   value={config.chordSize}
@@ -211,7 +214,7 @@ export function SettingsDrawer({
             )}
 
             {/* 4. 难度（星级） */}
-            <Section title="Difficulty">
+            <Section title={t('settings.difficulty')}>
               <div className="difficulty-stars">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -219,7 +222,7 @@ export function SettingsDrawer({
                     type="button"
                     className={`difficulty-star ${n <= config.difficultyLevel ? 'difficulty-star--active' : ''}`}
                     onClick={() => onUpdate({ difficultyLevel: n as DifficultyLevel })}
-                    aria-label={`Difficulty ${n}`}
+                    aria-label={t('settings.difficultyLevel', { n })}
                   >
                     <StarIcon />
                   </button>
@@ -228,7 +231,7 @@ export function SettingsDrawer({
             </Section>
 
             {/* 5. 调号 */}
-            <Section title="Key Signature">
+            <Section title={t('settings.keySignature')}>
               <PillGroup
                 options={KEY_SIGNATURE_OPTIONS}
                 value={config.keySignature}
@@ -239,7 +242,7 @@ export function SettingsDrawer({
             {/* 6. 音名提示开关 */}
             <div className="settings-drawer__section">
               <div className="setting-row">
-                <span className="setting-row__label">Note Labels</span>
+                <span className="setting-row__label">{t('settings.noteLabels')}</span>
                 <Toggle
                   on={config.showNoteLabel}
                   onToggle={() => onUpdate({ showNoteLabel: !config.showNoteLabel })}
@@ -250,7 +253,7 @@ export function SettingsDrawer({
             {/* 7. 答错自动下一题 */}
             <div className="settings-drawer__section">
               <div className="setting-row">
-                <span className="setting-row__label">Auto Next on Error</span>
+                <span className="setting-row__label">{t('settings.autoNextOnError')}</span>
                 <Toggle
                   on={config.autoNextOnError}
                   onToggle={() => onUpdate({ autoNextOnError: !config.autoNextOnError })}
@@ -261,7 +264,7 @@ export function SettingsDrawer({
             {/* 8. 升降号 */}
             <div className="settings-drawer__section">
               <div className="setting-row">
-                <span className="setting-row__label">Accidentals</span>
+                <span className="setting-row__label">{t('settings.accidentals')}</span>
                 <Toggle
                   on={config.includeAccidentals}
                   onToggle={() => onUpdate({ includeAccidentals: !config.includeAccidentals })}
@@ -272,7 +275,7 @@ export function SettingsDrawer({
             {/* 9. 声音开关 */}
             <div className="settings-drawer__section">
               <div className="setting-row">
-                <span className="setting-row__label">Sound</span>
+                <span className="setting-row__label">{t('settings.sound')}</span>
                 <Toggle on={soundEnabled} onToggle={onToggleSound} />
               </div>
             </div>

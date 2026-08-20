@@ -8,6 +8,7 @@
 import { useRef, useEffect, memo } from 'react';
 import { motion } from 'motion/react';
 import { renderStaff, renderGrandStaff, renderSongStaff, type ThemeColors } from '../lib/vexflow';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { NoteInfo, AnswerState, ClefType } from '../types';
 
 export interface StaffCanvasProps {
@@ -37,6 +38,7 @@ const NOCTURNE_COLORS: ThemeColors = {
 
 function StaffCanvasImpl(props: StaffCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   const {
     note,
@@ -121,7 +123,7 @@ function StaffCanvasImpl(props: StaffCanvasProps) {
         {/* VexFlow render target — must not contain React-managed children */}
         <div ref={containerRef} className="staff-canvas__vexflow" />
         {showIdle && (
-          <span className="staff-canvas__idle">Awaiting…</span>
+          <span className="staff-canvas__idle">{t('staff.awaiting')}</span>
         )}
       </motion.div>
 

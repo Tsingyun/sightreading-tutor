@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { MidiDeviceInfo } from '../types';
 
 interface MidiIndicatorProps {
@@ -35,6 +36,7 @@ export function MidiIndicator({
   onConnect,
   onSelect,
 }: MidiIndicatorProps) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLButtonElement>(null);
@@ -50,7 +52,7 @@ export function MidiIndicator({
   const selectedDevice =
     devices.find((d) => d.id === selectedDeviceId) ?? devices[0] ?? null;
 
-  const label = connected && selectedDevice ? selectedDevice.name : 'MIDI';
+  const label = connected && selectedDevice ? selectedDevice.name : t('midi.label');
 
   const handleClick = () => {
     if (!supported) return;
@@ -97,7 +99,7 @@ export function MidiIndicator({
         className={`midi-indicator ${stateClass}`}
         onClick={handleClick}
         aria-expanded={expanded}
-        aria-label={`MIDI status: ${label}. Click to ${expanded ? 'collapse' : 'expand'}`}
+        aria-label={t('midi.status', { label })}
       >
         <span className="midi-indicator__dot" />
         <span>{label}</span>
@@ -114,12 +116,12 @@ export function MidiIndicator({
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="midi-panel__header">
-              <div className="midi-panel__title">MIDI Devices</div>
+              <div className="midi-panel__title">{t('midi.devices')}</div>
               <button
                 type="button"
                 className="midi-panel__close"
                 onClick={handleClose}
-                aria-label="Close MIDI panel"
+                aria-label={t('midi.close')}
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -129,13 +131,13 @@ export function MidiIndicator({
 
             {!supported ? (
               <div className="midi-panel__error">
-                Web MIDI is not supported in this browser. Try Chrome, Edge, or Opera.
+                {t('midi.notSupported')}
               </div>
             ) : devices.length === 0 ? (
               <div className="midi-panel__error">
                 {connected
-                  ? 'MIDI is authorized, but no input devices were detected.'
-                  : 'No devices detected. Connect a MIDI keyboard and retry.'}
+                  ? t('midi.authorizedNoDevice')
+                  : t('midi.noDevices')}
               </div>
             ) : (
               devices.map((device) => (
@@ -157,7 +159,7 @@ export function MidiIndicator({
               onClick={onConnect}
               disabled={!supported || connecting}
             >
-              {connecting ? 'Connecting…' : connected ? 'Reconnect' : 'Connect MIDI'}
+              {connecting ? t('midi.connecting') : connected ? t('midi.reconnect') : t('midi.connect')}
             </button>
 
             {error && <div className="midi-panel__error">{error}</div>}

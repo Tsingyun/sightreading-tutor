@@ -7,6 +7,7 @@
 
 import { memo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { AnswerState } from '../types';
 
 export interface FeedbackOverlayProps {
@@ -22,6 +23,7 @@ export interface FeedbackOverlayProps {
 }
 
 function FeedbackOverlayImpl(props: FeedbackOverlayProps) {
+  const { t } = useLanguage();
   const {
     answerState,
     hintLevel = 0,
@@ -53,8 +55,8 @@ function FeedbackOverlayImpl(props: FeedbackOverlayProps) {
     'feedback-overlay__icon--revealed';
 
   const feedbackText =
-    answerState === 'correct' ? 'Correct' :
-    answerState === 'wrong' ? (noteName ? `Correct: ${noteName}` : 'Incorrect') :
+    answerState === 'correct' ? t('feedback.correct') :
+    answerState === 'wrong' ? (noteName ? `${t('feedback.correctWith')}${noteName}` : t('feedback.incorrect')) :
     answerState === 'revealed' ? (chordName || noteName || '') : '';
 
   return (
@@ -74,23 +76,23 @@ function FeedbackOverlayImpl(props: FeedbackOverlayProps) {
             )}
             {!hintText && (
               <span className="feedback-pending__text">
-                {hintLevel === 0 ? 'Play the note you see…' : 'Keep going…'}
+                {hintLevel === 0 ? t('feedback.playNote') : t('feedback.keepGoing')}
               </span>
             )}
             <div className="feedback-pending__actions">
               {onHint && hintLevel < 3 && (
                 <button className="feedback-btn" onClick={onHint}>
-                  Hint
+                  {t('feedback.hint')}
                 </button>
               )}
               {onReveal && (
                 <button className="feedback-btn" onClick={onReveal}>
-                  Reveal
+                  {t('feedback.reveal')}
                 </button>
               )}
               {onNext && (
                 <button className="feedback-btn feedback-btn--primary" onClick={onNext}>
-                  Skip
+                  {t('feedback.skip')}
                 </button>
               )}
             </div>
@@ -132,9 +134,9 @@ function FeedbackOverlayImpl(props: FeedbackOverlayProps) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <button className="feedback-btn" onClick={onRetry}>Retry</button>
+                <button className="feedback-btn" onClick={onRetry}>{t('feedback.retry')}</button>
                 {onNext && (
-                  <button className="feedback-btn feedback-btn--primary" onClick={onNext}>Next</button>
+                  <button className="feedback-btn feedback-btn--primary" onClick={onNext}>{t('feedback.next')}</button>
                 )}
               </motion.div>
             )}

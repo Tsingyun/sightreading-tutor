@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { saveGuideSeen } from '../lib/storage';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { AppMode } from '../types';
 
 interface OnboardingProps {
@@ -153,11 +154,12 @@ function MidiVisual() {
 }
 
 function PathsVisual() {
+  const { t } = useLanguage();
   const modes: { mode: AppMode; label: string; icon: ReactNode }[] = [
-    { mode: 'training', label: 'Training', icon: <NoteIcon /> },
-    { mode: 'freeplay', label: 'Free Play', icon: <KeyboardIcon /> },
-    { mode: 'rhythm', label: 'Rhythm', icon: <MetronomeIcon /> },
-    { mode: 'song', label: 'Song', icon: <SheetIcon /> },
+    { mode: 'training', label: t('onboarding.path.training'), icon: <NoteIcon /> },
+    { mode: 'freeplay', label: t('onboarding.path.freePlay'), icon: <KeyboardIcon /> },
+    { mode: 'rhythm', label: t('onboarding.path.rhythm'), icon: <MetronomeIcon /> },
+    { mode: 'song', label: t('onboarding.path.song'), icon: <SheetIcon /> },
   ];
   return (
     <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -202,35 +204,18 @@ function PathsVisual() {
   );
 }
 
-/* ---------- 步骤定义 ---------- */
+/* ---------- 步骤定义（文案由 i18n 提供） ---------- */
 
-interface OnboardingStep {
-  title: string;
-  body: string;
-  visual: ReactNode;
-}
-
-const STEPS: OnboardingStep[] = [
-  {
-    title: 'Welcome to Nocturne',
-    body: 'Nocturne is a calm, focused space to learn sight-reading. Read notes from the staff, play them on your MIDI keyboard, and watch your fluency grow — one note at a time.',
-    visual: <WelcomeVisual />,
-  },
-  {
-    title: 'Connect Your MIDI',
-    body: 'Plug in a MIDI keyboard and Nocturne listens as you play. No keyboard yet? You can also tap the on-screen keys. Tap the MIDI indicator in the corner to connect at any time.',
-    visual: <MidiVisual />,
-  },
-  {
-    title: 'Choose Your Path',
-    body: 'Four ways to grow: Training sharpens note reading, Free Play explores chords in real time, Rhythm builds your timing, and Song lets you practice real pieces.',
-    visual: <PathsVisual />,
-  },
+const STEPS: { visual: ReactNode }[] = [
+  { visual: <WelcomeVisual /> },
+  { visual: <MidiVisual /> },
+  { visual: <PathsVisual /> },
 ];
 
 /* ---------- 主组件 ---------- */
 
 export function Onboarding({ visible, onClose }: OnboardingProps) {
+  const { t } = useLanguage();
   const [step, setStep] = useState(0);
 
   // 浮层打开时回到第一步
@@ -256,6 +241,8 @@ export function Onboarding({ visible, onClose }: OnboardingProps) {
 
   const isLast = step === STEPS.length - 1;
   const current = STEPS[step];
+  const title = t('onboarding.step' + (step + 1) + 'Title');
+  const body = t('onboarding.step' + (step + 1) + 'Body');
   const indicator = `${String(step + 1).padStart(2, '0')} / ${String(STEPS.length).padStart(2, '0')}`;
 
   return (
@@ -281,8 +268,8 @@ export function Onboarding({ visible, onClose }: OnboardingProps) {
                 transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="onboarding__visual">{current.visual}</div>
-                <h2 className="onboarding__title">{current.title}</h2>
-                <p className="onboarding__body">{current.body}</p>
+                <h2 className="onboarding__title">{title}</h2>
+                <p className="onboarding__body">{body}</p>
               </motion.div>
             </AnimatePresence>
 
@@ -292,14 +279,14 @@ export function Onboarding({ visible, onClose }: OnboardingProps) {
                 className="onboarding__btn onboarding__btn--ghost"
                 onClick={handleClose}
               >
-                Skip
+                {t('onboarding.skip')}
               </button>
               <button
                 type="button"
                 className="onboarding__btn onboarding__btn--primary"
                 onClick={() => (isLast ? handleClose() : setStep(step + 1))}
               >
-                {isLast ? 'Begin' : 'Next'}
+                {isLast ? t('onboarding.begin') : t('onboarding.next')}
               </button>
             </div>
           </div>

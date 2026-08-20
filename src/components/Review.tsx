@@ -10,7 +10,9 @@
  */
 
 import { motion, AnimatePresence } from 'motion/react';
-import type { AppMode, SessionStats } from '../types';
+import type { SessionStats } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 
 interface ReviewProps {
   stats: SessionStats;
@@ -21,43 +23,19 @@ interface ReviewProps {
 /** 与 --ease-out-expo 一致的三次贝塞尔，供 motion 复用 */
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
-/** 模式 → 标题 */
-const TITLE_BY_MODE: Record<AppMode, string> = {
-  training: 'Sight Reading Session',
-  freeplay: 'Free Play Session',
-  rhythm: 'Rhythm Session',
-  song: 'Repertoire Session',
-};
-
-/** 准确率档位 → 寄语 */
-const MESSAGE_TIERS: { tier: string; min: number; text: string }[] = [
-  {
-    tier: 'exquisite',
-    min: 90,
-    text: 'Exquisite. Your reading grows sharper with each session.',
-  },
-  {
-    tier: 'well',
-    min: 70,
-    text: 'Well done. The notes are becoming familiar territory.',
-  },
-  {
-    tier: 'steady',
-    min: 50,
-    text: 'Steady progress. Every session builds your intuition.',
-  },
-  {
-    tier: 'begin',
-    min: 0,
-    text: 'Every master began here. Return when ready.',
-  },
+/** 准确率档位（不含文案，文案由 i18n 提供） */
+const MESSAGE_TIERS: { tier: string; min: number }[] = [
+  { tier: 'exquisite', min: 90 },
+  { tier: 'well', min: 70 },
+  { tier: 'steady', min: 50 },
+  { tier: 'begin', min: 0 },
 ];
 
-function getMessage(accuracy: number): { tier: string; text: string } {
+function getTier(accuracy: number): string {
   const match =
     MESSAGE_TIERS.find((entry) => accuracy >= entry.min) ??
     MESSAGE_TIERS[MESSAGE_TIERS.length - 1];
-  return { tier: match.tier, text: match.text };
+  return match.tier;
 }
 
 /** 秒数格式化为 "Xm Ys" 或 "Xs" */
@@ -78,12 +56,19 @@ const itemVariant = {
   },
 };
 
-export function Review({ stats, onRetry, onBackToHub }: ReviewProps) {
+export function Review({
+  stats,
+  onRetry,
+  onBackToHub,
+}: ReviewProps) {
+  const { t } = useLanguage();
   const accuracy = Math.round((stats.correct / Math.max(stats.total, 1)) * 100);
-  const message = getMessage(accuracy);
+  const tier = getTier(accuracy);
+  const message = { tier, text: t('review.message.' + tier) };
 
   return (
     <div className="screen-review">
+      <LanguageToggle />
       <motion.div
         className="review-card"
         initial="hidden"
@@ -103,33 +88,33 @@ export function Review({ stats, onRetry, onBackToHub }: ReviewProps) {
         }}
       >
         <motion.p className="review-card__pretitle" variants={itemVariant}>
-          SESSION COMPLETE
+          {t('review.sessionComplete')}
         </motion.p>
 
         <motion.h1 className="review-card__title" variants={itemVariant}>
-          {TITLE_BY_MODE[stats.mode]}
+          {t('review.title.' + stats.mode)}
         </motion.h1>
 
         <motion.div className="review-stats" variants={itemVariant}>
           <div className="review-stat">
             <span className="review-stat__value">{accuracy}%</span>
-            <span className="review-stat__label">Accuracy</span>
+            <span className="review-stat__label">{t('review.accuracy')}</span>
           </div>
           <div className="review-stat">
             <span className="review-stat__value review-stat__value--sage">
               {stats.bestStreak}
             </span>
-            <span className="review-stat__label">Best Streak</span>
+            <span className="review-stat__label">{t('review.bestStreak')}</span>
           </div>
           <div className="review-stat">
             <span className="review-stat__value review-stat__value--terra">
               {Math.round(stats.avgReactionTime)}
             </span>
-            <span className="review-stat__label">Avg Time · ms</span>
+            <span className="review-stat__label">{t('review.avgTime')}</span>
           </div>
           <div className="review-stat">
             <span className="review-stat__value">{formatDuration(stats.duration)}</span>
-            <span className="review-stat__label">Duration</span>
+            <span className="review-stat__label">{t('review.duration')}</span>
           </div>
         </motion.div>
 
@@ -152,10 +137,10 @@ export function Review({ stats, onRetry, onBackToHub }: ReviewProps) {
 
         <motion.div className="review-card__actions" variants={itemVariant}>
           <button className="review-btn review-btn--primary" onClick={onRetry}>
-            Practice Again
+            {t('review.practiceAgain')}
           </button>
           <button className="review-btn review-btn--ghost" onClick={onBackToHub}>
-            Back to Hub
+            {t('review.backToHub')}
           </button>
         </motion.div>
       </motion.div>

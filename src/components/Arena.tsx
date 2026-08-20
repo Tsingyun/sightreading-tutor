@@ -15,6 +15,8 @@ import { PianoKeyboard } from './PianoKeyboard';
 import { StatsHud } from './StatsHud';
 import { SettingsDrawer } from './SettingsDrawer';
 import { MidiIndicator } from './MidiIndicator';
+import { LanguageToggle } from './LanguageToggle';
+import { useLanguage } from '../i18n/LanguageContext';
 import type { AppMode } from '../types';
 import type { UseTrainingReturn } from '../hooks/useTraining';
 import type { UseFreePlayReturn } from '../hooks/useFreePlay';
@@ -22,13 +24,6 @@ import type { UseRhythmReturn } from '../hooks/useRhythm';
 import type { UseSongPracticeReturn } from '../hooks/useSongPractice';
 import type { UsePianoSoundReturn } from '../hooks/usePianoSound';
 import type { UseMidiReturn } from '../hooks/useMidi';
-
-const MODE_LABELS: Record<AppMode, string> = {
-  training: 'Sight Reading',
-  freeplay: 'Free Play',
-  rhythm: 'Rhythm',
-  song: 'Repertoire',
-};
 
 const KEYBOARD_RANGE: Record<AppMode, { low: number; high: number }> = {
   training: { low: 55, high: 84 },
@@ -52,7 +47,7 @@ interface ArenaProps {
 
 export function Arena(props: ArenaProps) {
   const { mode, onBack, training, freePlay, rhythm, songPractice, pianoSound, midi, onVirtualKeyPress } = props;
-
+  const { t } = useLanguage();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // ESC to go back
@@ -111,17 +106,17 @@ export function Arena(props: ArenaProps) {
               <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
-          Hub
+          {t('arena.back')}
         </button>
 
-        <span className="arena-mode-label">{MODE_LABELS[mode]}</span>
+        <span className="arena-mode-label">{t('hub.mode.' + mode)}</span>
 
         <div className="arena-topbar__right">
           {/* Sound toggle */}
           <button
             className={`arena-icon-btn ${pianoSound.enabled ? 'arena-icon-btn--active' : ''}`}
             onClick={pianoSound.toggle}
-            title={pianoSound.enabled ? 'Sound on' : 'Sound off'}
+            title={pianoSound.enabled ? t('arena.soundOn') : t('arena.soundOff')}
           >
             {pianoSound.enabled ? (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -142,7 +137,7 @@ export function Arena(props: ArenaProps) {
             <button
               className={`arena-icon-btn ${settingsOpen ? 'arena-icon-btn--active' : ''}`}
               onClick={() => setSettingsOpen(true)}
-              title="Settings"
+              title={t('arena.settings')}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3" />
@@ -150,6 +145,9 @@ export function Arena(props: ArenaProps) {
               </svg>
             </button>
           )}
+
+          {/* Language switch */}
+          <LanguageToggle />
         </div>
       </div>
 
