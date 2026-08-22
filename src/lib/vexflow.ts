@@ -397,28 +397,42 @@ export interface SongRenderOptions {
   container: HTMLDivElement;
   notes: NoteInfo[];
   currentIndex: number;
-  windowSize?: number;
   answerState: AnswerState;
   themeColors: ThemeColors;
 }
 
+/**
+ * 乐曲练习专用渲染：一次性渲染整条音符序列成长五线谱，
+ * 通过外层 `.staff-canvas__song-track` 的 translateX 整体平移，
+ * 配合 CSS transition 实现「从右往左缓慢流动」的视觉效果。
+ *
+ * - 已弹对的音符显示为绿色
+ * - 当前音符根据 answerState 着色（pending=黑色, correct=绿色, wrong=红色）
+ * - 未弹奏的音符显示为浅灰色
+ * - 光标竖线标记当前待弹奏音符
+ */
 export function renderSongStaff(options: SongRenderOptions): void {
-  const { container, notes, currentIndex, windowSize = 4, answerState, themeColors } = options;
+  const { container, notes, currentIndex, answerState, themeColors } = options;
 
   container.innerHTML = '';
 
   if (notes.length === 0) return;
 
-  // 计算窗口：当前音符前显示 1 个已弹过的音，后面显示剩余位置
-  const start = Math.max(0, currentIndex - 1);
-  const end = Math.min(notes.length, start + windowSize);
-  const windowNotes = notes.slice(start, end);
-  const relativeIndex = currentIndex - start;
-
   const scale = 3.0;
-  const svgWidth = container.clientWidth || 800;
-  const drawWidth = svgWidth / scale;
+
+  // 视口（裁剪窗口）宽度，用于计算当前音符的停靠点
+  const frame = container.parentElement?.parentElement as HTMLElement | null;
+  const viewportWidth = frame ? frame.clientWidth : (container.clientWidth || 800);
+  const drawViewport = viewportWidth / scale;
+
+  // 渲染整条序列，宽度足以容纳全部音符；后续通过 track 整体平移
+  const staveX = 18;
+  const NOTE_SPACING = 58; // 逻辑单位：每个音符占用的横向间距
+  const contentWidth = staveX * 2 + notes.length * NOTE_SPACING;
+  const totalWidth = Math.max(drawViewport, contentWidth);
+  const drawWidth = totalWidth;
   const svgHeight = 150 * scale;
+  const svgWidth = drawWidth * scale;
 
   const renderer = new Renderer(container, Renderer.Backends.SVG);
   renderer.resize(svgWidth, svgHeight);
@@ -426,20 +440,19 @@ export function renderSongStaff(options: SongRenderOptions): void {
   context.scale(scale, scale);
   context.setFont('Arial', 12);
 
-  const staveX = 18;
-  const staveWidth = drawWidth - 36;
   const staveY = 35;
-  const stave = new Stave(staveX, staveY, staveWidth);
+  const stave = new Stave(staveX, staveY, drawWidth - staveX * 2);
 
   // 谱号取当前音符的谱号
-  const clef = windowNotes[relativeIndex]?.clef || notes[currentIndex]?.clef || 'treble';
+  const clampedIndex = Math.max(0, Math.min(currentIndex, notes.length - 1));
+  const clef = notes[clampedIndex]?.clef || 'treble';
   stave.addClef(clef);
   stave.setContext(context);
   stave.setStyle({ strokeStyle: themeColors.staffColor, fillStyle: themeColors.staffColor });
   stave.draw();
 
   // 创建每个音符的 StaveNote（统一用四分音符显示）
-  const staveNotes: StaveNote[] = windowNotes.map((note) => {
+  const staveNotes: StaveNote[] = notes.map((note) => {
     const sn = new StaveNote({
       keys: [note.vexKey],
       duration: 'q',
@@ -459,7 +472,7 @@ export function renderSongStaff(options: SongRenderOptions): void {
 
   const formatter = new Formatter();
   formatter.joinVoices([voice]);
-  formatter.format([voice], staveWidth - 60);
+  formatter.format([voice], drawWidth - staveX * 2);
 
   voice.draw(context, stave);
 
@@ -472,10 +485,10 @@ export function renderSongStaff(options: SongRenderOptions): void {
     const accidentals = el.querySelectorAll('.vf-accidental text');
 
     let color: string;
-    if (i < relativeIndex) {
+    if (i < clampedIndex) {
       // 已弹对
       color = themeColors.noteCorrect;
-    } else if (i === relativeIndex) {
+    } else if (i === clampedIndex) {
       // 当前音符
       color = getNoteColor(answerState, themeColors);
     } else {
@@ -489,9 +502,9 @@ export function renderSongStaff(options: SongRenderOptions): void {
     accidentals.forEach((a) => { (a as SVGTextElement).style.fill = color; });
   });
 
-  // 绘制光标竖线
-  if (relativeIndex < staveNotes.length) {
-    const cursorX = staveNotes[relativeIndex].getAbsoluteX();
+  // 绘制光标竖线（仍在曲目内时）
+  if (currentIndex < notes.length) {
+    const cursorX = staveNotes[clampedIndex].getAbsoluteX();
     const staveTop = stave.getYForLine(0) - 8;
     const staveBottom = stave.getYForLine(4) + 8;
     const cursorColor = answerState === 'wrong' ? themeColors.noteWrong : themeColors.noteDefault;
@@ -504,5 +517,14 @@ export function renderSongStaff(options: SongRenderOptions): void {
     context.lineTo(cursorX, staveBottom);
     context.stroke();
     context.restore();
+  }
+
+  // 平移 track：让当前音符停靠在视口左侧约 20% 处，后续音符从右侧流近
+  const track = container.parentElement as HTMLElement | null;
+  if (track) {
+    const noteX = staveNotes[clampedIndex]?.getAbsoluteX() ?? staveX;
+    const refX = staveX + drawViewport * 0.2;
+    const shift = refX - noteX; // 逻辑单位
+    track.style.transform = `translateX(${shift * scale}px)`;
   }
 }

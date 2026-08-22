@@ -107,6 +107,7 @@ function StaffCanvasImpl(props: StaffCanvasProps) {
   }, [note, chord, playedIndices, answerState, clefMode, showLabel, alwaysShowLabel, flashLabel, chordName, keySignature, songNotes, songCurrentIndex]);
 
   const showIdle = idle || (!note && !chord && (!songNotes || songNotes.length === 0));
+  const isSong = !!songNotes && songNotes.length > 0;
   const labelNote = chord?.[0] ?? note;
   const labelColorClass =
     answerState === 'wrong' ? 'staff-note-label--terra' :
@@ -114,18 +115,38 @@ function StaffCanvasImpl(props: StaffCanvasProps) {
 
   return (
     <div className="staff-canvas">
-      <motion.div
-        className="staff-canvas__container"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {/* VexFlow render target — must not contain React-managed children */}
-        <div ref={containerRef} className="staff-canvas__vexflow" />
-        {showIdle && (
-          <span className="staff-canvas__idle">{t('staff.awaiting')}</span>
-        )}
-      </motion.div>
+      {isSong ? (
+        <motion.div
+          className="staff-canvas__song-anim"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* 乐曲模式：长五线谱整体平移，从右往左流动 */}
+          <div className="staff-canvas__song-frame">
+            <div className="staff-canvas__song-track">
+              {/* VexFlow render target — must not contain React-managed children */}
+              <div ref={containerRef} className="staff-canvas__song-render" />
+            </div>
+            {showIdle && (
+              <span className="staff-canvas__idle">{t('staff.awaiting')}</span>
+            )}
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="staff-canvas__container"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* VexFlow render target — must not contain React-managed children */}
+          <div ref={containerRef} className="staff-canvas__vexflow" />
+          {showIdle && (
+            <span className="staff-canvas__idle">{t('staff.awaiting')}</span>
+          )}
+        </motion.div>
+      )}
 
       {/* Note label — absolutely positioned so it never shifts the staff layout */}
       <div className="staff-canvas__label-slot">
