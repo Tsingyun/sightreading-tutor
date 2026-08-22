@@ -2,7 +2,7 @@
  * translations.ts — Nocturne i18n 字典
  * ============================================
  * 集中存放所有可翻译的 UI 文案。
- * - 键名使用点分路径（如 `hub.mode.sightReading`）。
+ * - 键名使用点分路径（如 `hub.mode.training`）。
  * - 品牌艺术字（NOCTURNE CONSERVATORY / Sight Reading Reimagined）不在字典内，
  *   保持英文作为视觉标识。
  * - 数值型标签（调号 C/G/D/F、和弦大小 2/3/4、BPM、速度 0.5× 等）为通用符号，不翻译。
@@ -18,16 +18,16 @@ export const en = {
   hub: {
     subtitle: 'A nocturnal journey through musical notation. Choose your path.',
     mode: {
-      sightReading: 'Sight Reading',
-      freePlay: 'Free Play',
+      training: 'Sight Reading',
+      freeplay: 'Free Play',
       rhythm: 'Rhythm',
-      repertoire: 'Repertoire',
+      song: 'Repertoire',
     },
     modeDesc: {
-      sightReading: 'Identify notes on the staff',
-      freePlay: 'Explore chords & intervals',
+      training: 'Identify notes on the staff',
+      freeplay: 'Explore chords & intervals',
       rhythm: 'Master timing & pulse',
-      repertoire: 'Play classical melodies',
+      song: 'Play classical melodies',
     },
     stat: {
       bestStreak: 'BEST STREAK',
@@ -51,10 +51,10 @@ export const en = {
   review: {
     sessionComplete: 'SESSION COMPLETE',
     title: {
-      sightReading: 'Sight Reading Session',
-      freePlay: 'Free Play Session',
+      training: 'Sight Reading Session',
+      freeplay: 'Free Play Session',
       rhythm: 'Rhythm Session',
-      repertoire: 'Repertoire Session',
+      song: 'Repertoire Session',
     },
     message: {
       exquisite: 'Exquisite. Your reading grows sharper with each session.',
@@ -81,7 +81,7 @@ export const en = {
       'Four ways to grow: Training sharpens note reading, Free Play explores chords in real time, Rhythm builds your timing, and Song lets you practice real pieces.',
     path: {
       training: 'Training',
-      freePlay: 'Free Play',
+      freeplay: 'Free Play',
       rhythm: 'Rhythm',
       song: 'Song',
     },
@@ -191,16 +191,16 @@ export const zh = {
   hub: {
     subtitle: '一段夜色中的识谱之旅，选择你的路径。',
     mode: {
-      sightReading: '识谱训练',
-      freePlay: '自由弹奏',
+      training: '识谱训练',
+      freeplay: '自由弹奏',
       rhythm: '节奏训练',
-      repertoire: '乐曲练习',
+      song: '乐曲练习',
     },
     modeDesc: {
-      sightReading: '在五线谱上辨认音符',
-      freePlay: '探索和弦与音程',
+      training: '在五线谱上辨认音符',
+      freeplay: '探索和弦与音程',
       rhythm: '掌握节奏与律动',
-      repertoire: '演奏经典旋律',
+      song: '演奏经典旋律',
     },
     stat: {
       bestStreak: '最佳连击',
@@ -224,10 +224,10 @@ export const zh = {
   review: {
     sessionComplete: '本次练习完成',
     title: {
-      sightReading: '识谱训练',
-      freePlay: '自由弹奏',
+      training: '识谱训练',
+      freeplay: '自由弹奏',
       rhythm: '节奏训练',
-      repertoire: '乐曲练习',
+      song: '乐曲练习',
     },
     message: {
       exquisite: '精妙。你的识谱能力在每次练习中愈发敏锐。',
@@ -254,7 +254,7 @@ export const zh = {
       '四条成长路径：训练打磨识谱、自由弹奏实时探索和弦、节奏锤炼你的律动，乐曲则让你练习真实的曲子。',
     path: {
       training: '训练',
-      freePlay: '自由弹奏',
+      freeplay: '自由弹奏',
       rhythm: '节奏',
       song: '乐曲',
     },

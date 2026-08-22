@@ -157,7 +157,7 @@ function PathsVisual() {
   const { t } = useLanguage();
   const modes: { mode: AppMode; label: string; icon: ReactNode }[] = [
     { mode: 'training', label: t('onboarding.path.training'), icon: <NoteIcon /> },
-    { mode: 'freeplay', label: t('onboarding.path.freePlay'), icon: <KeyboardIcon /> },
+    { mode: 'freeplay', label: t('onboarding.path.freeplay'), icon: <KeyboardIcon /> },
     { mode: 'rhythm', label: t('onboarding.path.rhythm'), icon: <MetronomeIcon /> },
     { mode: 'song', label: t('onboarding.path.song'), icon: <SheetIcon /> },
   ];
