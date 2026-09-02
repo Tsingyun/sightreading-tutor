@@ -11,6 +11,7 @@ import { TrainingArena } from './TrainingArena';
 import { FreePlayArena } from './FreePlayArena';
 import { RhythmArena } from './RhythmArena';
 import { SongArena } from './SongArena';
+import { ScalesArena } from './ScalesArena';
 import { PianoKeyboard } from './PianoKeyboard';
 import { StatsHud } from './StatsHud';
 import { SettingsDrawer } from './SettingsDrawer';
@@ -22,6 +23,7 @@ import type { UseTrainingReturn } from '../hooks/useTraining';
 import type { UseFreePlayReturn } from '../hooks/useFreePlay';
 import type { UseRhythmReturn } from '../hooks/useRhythm';
 import type { UseSongPracticeReturn } from '../hooks/useSongPractice';
+import type { UseScalesReturn } from '../hooks/useScales';
 import type { UsePianoSoundReturn } from '../hooks/usePianoSound';
 import type { UseMidiReturn } from '../hooks/useMidi';
 
@@ -30,6 +32,7 @@ const KEYBOARD_RANGE: Record<AppMode, { low: number; high: number }> = {
   freeplay: { low: 36, high: 96 },
   rhythm: { low: 48, high: 72 },
   song: { low: 48, high: 84 },
+  scales: { low: 55, high: 84 },
 };
 
 interface ArenaProps {
@@ -40,13 +43,14 @@ interface ArenaProps {
   freePlay: UseFreePlayReturn;
   rhythm: UseRhythmReturn;
   songPractice: UseSongPracticeReturn;
+  scales: UseScalesReturn;
   pianoSound: UsePianoSoundReturn;
   midi: UseMidiReturn;
   onVirtualKeyPress: (midi: number) => void;
 }
 
 export function Arena(props: ArenaProps) {
-  const { mode, onBack, training, freePlay, rhythm, songPractice, pianoSound, midi, onVirtualKeyPress } = props;
+  const { mode, onBack, onSessionEnd, training, freePlay, rhythm, songPractice, scales, pianoSound, midi, onVirtualKeyPress } = props;
   const { t } = useLanguage();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -71,6 +75,8 @@ export function Arena(props: ArenaProps) {
         return <RhythmArena rhythm={rhythm} />;
       case 'song':
         return <SongArena songPractice={songPractice} />;
+      case 'scales':
+        return <ScalesArena scales={scales} onEnd={onSessionEnd} />;
     }
   };
 
@@ -88,7 +94,7 @@ export function Arena(props: ArenaProps) {
     disabled: mode === 'rhythm',
     activeNotes: mode === 'freeplay' ? freePlay.activeNotes : [],
     pressedNote: mode === 'training' ? training.pressedNote : null,
-    wrongNote: mode === 'training' ? training.wrongNote : (mode === 'song' ? songPractice.wrongNote : null),
+    wrongNote: mode === 'training' ? training.wrongNote : (mode === 'song' ? songPractice.wrongNote : (mode === 'scales' ? scales.wrongNote : null)),
     correctNote: mode === 'training' && training.config.mode === 'single' && (training.answerState === 'correct' || training.answerState === 'revealed') ? training.currentNote?.midi ?? null : null,
     playedIndices: mode === 'training' ? training.playedIndices : [],
     currentChordNotes: mode === 'training' && training.currentChord

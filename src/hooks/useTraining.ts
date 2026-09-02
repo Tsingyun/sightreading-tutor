@@ -377,9 +377,10 @@ export function useTraining(): UseTrainingReturn {
         }
         statsCountedRef.current = true;
 
+        // 缩短单音答对后的等待，让节奏更连贯（原 400ms → 180ms）
         setTimeout(() => {
           if (isTraining) nextQuestion();
-        }, 400);
+        }, 180);
       } else {
         setAnswerState('wrong');
 

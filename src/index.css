@@ -258,10 +258,10 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 /* — Portals Grid — */
 .hub-portals {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 22px;
   width: 100%;
-  max-width: 960px;
+  max-width: 1120px;
   opacity: 0;
   animation: fade-up 1000ms var(--ease-out-expo) 800ms forwards;
 }
@@ -639,6 +639,17 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   font-style: italic;
   color: var(--fg-tertiary);
   letter-spacing: 0.02em;
+}
+
+/* — Scales hint (below the scrolling staff) — */
+.scales-hint {
+  margin-top: 18px;
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--fg-tertiary);
+  text-align: center;
+  min-height: 22px;
 }
 
 /* — Label slot: fixed height, never shifts the staff — */

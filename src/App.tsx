@@ -27,6 +27,7 @@ import { useTraining } from './hooks/useTraining';
 import { useFreePlay } from './hooks/useFreePlay';
 import { useSongPractice } from './hooks/useSongPractice';
 import { useRhythm } from './hooks/useRhythm';
+import { useScales } from './hooks/useScales';
 import { usePianoSound } from './hooks/usePianoSound';
 import { loadGuideSeen, saveGuideSeen, loadBestStreak, loadStats } from './lib/storage';
 import type { AppMode, Screen, SessionStats, ToastItem } from './types';
@@ -47,6 +48,7 @@ function App() {
   const freePlay = useFreePlay();
   const songPractice = useSongPractice();
   const rhythm = useRhythm();
+  const scales = useScales();
   const pianoSound = usePianoSound();
 
   // — First-time onboarding —
@@ -91,6 +93,8 @@ function App() {
   freePlayRef.current = freePlay;
   const songPracticeRef = useRef(songPractice);
   songPracticeRef.current = songPractice;
+  const scalesRef = useRef(scales);
+  scalesRef.current = scales;
   const pianoSoundRef = useRef(pianoSound);
   pianoSoundRef.current = pianoSound;
   const arenaModeRef = useRef(arenaMode);
@@ -123,6 +127,10 @@ function App() {
         if (isNoteOn) {
           songPracticeRef.current.submitAnswer(note);
         }
+      } else if (mode === 'scales') {
+        if (isNoteOn) {
+          scalesRef.current.submitAnswer(note);
+        }
       } else {
         if (isNoteOn && trainingRef.current.isTraining) {
           trainingRef.current.submitAnswer(note);
@@ -147,6 +155,9 @@ function App() {
       } else if (mode === 'song') {
         pianoSound.playNote(midiNote);
         songPractice.submitAnswer(midiNote);
+      } else if (mode === 'scales') {
+        pianoSound.playNote(midiNote);
+        scales.submitAnswer(midiNote);
       } else {
         pianoSound.playNote(midiNote);
         training.submitAnswer(midiNote);
@@ -166,26 +177,27 @@ function App() {
     // Stop any active sessions
     if (training.isTraining) training.stopTraining();
     if (rhythm.isPlaying) rhythm.stop();
+    if (scales.isPlaying) scales.stop();
     setScreen('hub');
-  }, [training, rhythm]);
+  }, [training, rhythm, scales]);
 
   // — Arena → Review (session end) —
   const handleSessionEnd = useCallback(() => {
-    const stats = training.stats;
-    const avgRT = stats.reactionCount > 0
-      ? Math.round(stats.totalReactionTime / stats.reactionCount)
+    const src = arenaMode === 'scales' ? scales.stats : training.stats;
+    const avgRT = src.reactionCount > 0
+      ? Math.round(src.totalReactionTime / src.reactionCount)
       : 0;
     setSessionStats({
       mode: arenaMode,
-      correct: stats.correct,
-      total: stats.total,
-      streak: stats.streak,
-      bestStreak: stats.bestStreak,
+      correct: src.correct,
+      total: src.total,
+      streak: src.streak,
+      bestStreak: src.bestStreak,
       avgReactionTime: avgRT,
       duration: 0,
     });
     setScreen('review');
-  }, [training.stats, arenaMode]);
+  }, [arenaMode, scales.stats, training.stats]);
 
   // — Review → Arena (retry) —
   const handleRetry = useCallback(() => {
@@ -239,6 +251,7 @@ function App() {
               freePlay={freePlay}
               rhythm={rhythm}
               songPractice={songPractice}
+              scales={scales}
               pianoSound={pianoSound}
               midi={midi}
               onVirtualKeyPress={handleVirtualKeyPress}

@@ -105,6 +105,27 @@ function SheetIcon() {
   );
 }
 
+function ScaleIcon() {
+  return (
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 20V8l8-4v12" />
+      <path d="M12 16l8-4" />
+      <circle cx="4" cy="20" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="16" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="20" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 /* ---------- 步骤大图视觉 ---------- */
 
 function WelcomeVisual() {
@@ -160,6 +181,7 @@ function PathsVisual() {
     { mode: 'freeplay', label: t('onboarding.path.freeplay'), icon: <KeyboardIcon /> },
     { mode: 'rhythm', label: t('onboarding.path.rhythm'), icon: <MetronomeIcon /> },
     { mode: 'song', label: t('onboarding.path.song'), icon: <SheetIcon /> },
+    { mode: 'scales', label: t('onboarding.path.scales'), icon: <ScaleIcon /> },
   ];
   return (
     <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
