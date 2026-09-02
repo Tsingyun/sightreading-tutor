@@ -29,11 +29,11 @@ const SCALE_LOW = 60;
 const SCALE_HIGH = 81;
 
 /** 前方预生成的音符数量（保证流动不断） */
-const GEN_AHEAD = 10;
+const GEN_AHEAD = 6;
 
 /** 历史保留上限：当前索引超过该值后裁剪左侧已弹奏的音符 */
-const HISTORY_CAP = 16;
-const HISTORY_KEEP = 8;
+const HISTORY_CAP = 8;
+const HISTORY_KEEP = 4;
 
 /** 反应时间上限（毫秒） */
 const MAX_REACTION_TIME = 5000;
@@ -44,6 +44,8 @@ interface GenState {
   dir: 1 | -1;
   run: { name: string; intervals: number[] };
   root: number;
+  /** 距上次切换音阶/根音已生成的音符数 */
+  sinceSwitch: number;
 }
 
 export interface UseScalesReturn {
@@ -88,7 +90,7 @@ export function useScales(): UseScalesReturn {
   const indexRef = useRef(0);
   const answerStateRef = useRef<AnswerState>('idle');
   const isPlayingRef = useRef(false);
-  const genRef = useRef<GenState>({ degree: 0, dir: 1, run: SCALE_RUNS[0], root: 60 });
+  const genRef = useRef<GenState>({ degree: 0, dir: 1, run: SCALE_RUNS[0], root: 60, sinceSwitch: 0 });
   const questionStartRef = useRef(0);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -113,44 +115,39 @@ export function useScales(): UseScalesReturn {
   const stepGen = useCallback((): number => {
     const g = genRef.current;
     const intervals = g.run.intervals;
-    let d = g.degree + g.dir;
+    const len = intervals.length;
 
-    if (d > intervals.length - 1) {
-      g.dir = -1;
-      d = intervals.length - 2;
-    } else if (d < 0) {
-      g.dir = 1;
-      d = 1;
-    }
-    g.degree = d;
-
-    // 触底回升时，有概率切换音阶/根音，实现"多个音阶"交替练习
-    if (d === 0 && Math.random() < 0.5) {
+    // 周期性切换音阶/根音（多个音阶交替练习），每 4~7 个音有概率换调
+    g.sinceSwitch = (g.sinceSwitch ?? 0) + 1;
+    if (g.sinceSwitch >= 4 + Math.floor(Math.random() * 4) && Math.random() < 0.7) {
       const pick = pickRunAndRoot();
       g.run = pick.run;
       g.root = pick.root;
       g.degree = 0;
       g.dir = 1;
+      g.sinceSwitch = 0;
       return g.root + g.run.intervals[0];
     }
 
-    return g.root + intervals[d];
-  }, [pickRunAndRoot]);
-
-  /** 保证前方有足够未弹奏音符 */
-  const topUp = useCallback((arr: NoteInfo[]): NoteInfo[] => {
-    while (arr.length - indexRef.current < GEN_AHEAD) {
-      arr.push(makeNote(stepGen()));
+    // 音阶内随机跳步：步长 1~3、方向随机，越界则夹在端点处
+    // （保持音阶约束，但走向不可预测，更锻炼识谱）
+    const STEP_CHOICES = [-3, -2, -1, 1, 2, 3];
+    const step = STEP_CHOICES[Math.floor(Math.random() * STEP_CHOICES.length)];
+    let next = g.degree + step;
+    if (next < 0 || next > len - 1) {
+      next = Math.max(0, Math.min(len - 1, next));
     }
-    return arr;
-  }, [makeNote, stepGen]);
+    g.degree = next;
+
+    return g.root + intervals[next];
+  }, [pickRunAndRoot]);
 
   // —— 开始 ——
   const start = useCallback(() => {
     if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
 
     const pick = pickRunAndRoot();
-    genRef.current = { degree: 0, dir: 1, run: pick.run, root: pick.root };
+    genRef.current = { degree: 0, dir: 1, run: pick.run, root: pick.root, sinceSwitch: 0 };
 
     const arr: NoteInfo[] = [makeNote(pick.root + pick.run.intervals[0])];
     for (let i = 1; i < GEN_AHEAD + 4; i++) {
@@ -225,26 +222,29 @@ export function useScales(): UseScalesReturn {
       if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = setTimeout(() => {
         const ni = indexRef.current + 1;
-        const arr = [...notesRef.current];
-        topUp(arr);
-
-        // 裁剪过长历史，保持动画流畅
+        let arr = [...notesRef.current];
         let newIdx = ni;
-        let newArr = arr;
+
+        // 裁剪过长历史，保持每次重画的音符数较小、动画流畅
         if (newIdx > HISTORY_CAP) {
-          newArr = arr.slice(newIdx - HISTORY_KEEP);
+          arr = arr.slice(newIdx - HISTORY_KEEP);
           newIdx = HISTORY_KEEP;
         }
 
-        notesRef.current = newArr;
+        // 右侧补足预生成音符（相对当前索引 newIdx）
+        while (arr.length - newIdx < GEN_AHEAD + 1) {
+          arr.push(makeNote(stepGen()));
+        }
+
+        notesRef.current = arr;
         indexRef.current = newIdx;
         questionStartRef.current = performance.now();
 
-        setNotes([...newArr]);
+        setNotes([...arr]);
         setCurrentIndex(newIdx);
         setAnswerState('pending');
         answerStateRef.current = 'pending';
-      }, 140);
+      }, 90);
 
       return true;
     } else {
@@ -262,7 +262,7 @@ export function useScales(): UseScalesReturn {
       }, 600);
       return false;
     }
-  }, [topUp]);
+  }, []);
 
   // —— 清零统计 ——
   const reset = useCallback(() => {

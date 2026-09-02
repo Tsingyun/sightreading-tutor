@@ -611,7 +611,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 
 .staff-canvas__song-track {
   display: inline-block;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.42s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: transform;
 }
 
