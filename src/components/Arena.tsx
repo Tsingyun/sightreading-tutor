@@ -19,6 +19,7 @@ import { MidiIndicator } from './MidiIndicator';
 import { LanguageToggle } from './LanguageToggle';
 import { useLanguage } from '../i18n/LanguageContext';
 import type { AppMode } from '../types';
+import { getSongRange, type PresetSong } from '../lib/songLibrary';
 import type { UseTrainingReturn } from '../hooks/useTraining';
 import type { UseFreePlayReturn } from '../hooks/useFreePlay';
 import type { UseRhythmReturn } from '../hooks/useRhythm';
@@ -47,10 +48,14 @@ interface ArenaProps {
   pianoSound: UsePianoSoundReturn;
   midi: UseMidiReturn;
   onVirtualKeyPress: (midi: number) => void;
+  /** 统一旋律之旅：识谱完成 → 同一首歌的乐曲练习 */
+  onGoToSongPractice: (song: PresetSong) => void;
+  /** 统一旋律之旅：乐曲练习 → 同一首歌的逐音识谱 */
+  onGoToSightReading: (song: PresetSong) => void;
 }
 
 export function Arena(props: ArenaProps) {
-  const { mode, onBack, onSessionEnd, training, freePlay, rhythm, songPractice, scales, pianoSound, midi, onVirtualKeyPress } = props;
+  const { mode, onBack, onSessionEnd, training, freePlay, rhythm, songPractice, scales, pianoSound, midi, onVirtualKeyPress, onGoToSongPractice, onGoToSightReading } = props;
   const { t } = useLanguage();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -68,24 +73,42 @@ export function Arena(props: ArenaProps) {
   const renderMode = () => {
     switch (mode) {
       case 'training':
-        return <TrainingArena training={training} />;
+        return <TrainingArena training={training} onGoToSongPractice={onGoToSongPractice} />;
       case 'freeplay':
         return <FreePlayArena freePlay={freePlay} />;
       case 'rhythm':
         return <RhythmArena rhythm={rhythm} />;
       case 'song':
-        return <SongArena songPractice={songPractice} />;
+        return <SongArena songPractice={songPractice} onGoToSightReading={onGoToSightReading} />;
       case 'scales':
         return <ScalesArena scales={scales} onEnd={onSessionEnd} />;
     }
   };
 
   // Keyboard range: in training mode the keyboard must cover the exact note
-  // range being quizzed (so e.g. bass/both clef low notes are playable on screen).
+  // range being quizzed. In the melody journey it must additionally cover the
+  // current song's full melody range so every next note is playable on screen.
+  const melodyRange = getSongRange(training.melodySong);
   const keyboardRange =
     mode === 'training'
-      ? { low: training.config.lowNote, high: training.config.highNote }
+      ? training.config.mode === 'single'
+        ? {
+            low: Math.min(training.config.lowNote, melodyRange.low),
+            high: Math.max(training.config.highNote, melodyRange.high),
+          }
+        : { low: training.config.lowNote, high: training.config.highNote }
       : KEYBOARD_RANGE[mode];
+
+  // 统一旋律之旅中，顶栏中部同时显示阶段与歌名（与内容区标题栏呼应）
+  const journeySong =
+    mode === 'training' && training.config.mode === 'single'
+      ? training.melodySong
+      : mode === 'song'
+        ? songPractice.currentSong
+        : null;
+  const topbarLabel = journeySong
+    ? `${t('hub.mode.' + mode)} · 《${journeySong.name}》`
+    : t('hub.mode.' + mode);
 
   // Keyboard state for PianoKeyboard component
   const keyboardProps = {
@@ -115,7 +138,7 @@ export function Arena(props: ArenaProps) {
           {t('arena.back')}
         </button>
 
-        <span className="arena-mode-label">{t('hub.mode.' + mode)}</span>
+        <span className="arena-mode-label">{topbarLabel}</span>
 
         <div className="arena-topbar__right">
           {/* Sound toggle */}
