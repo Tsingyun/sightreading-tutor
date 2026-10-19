@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   bestStreak: 'sightreading_best_streak',
   guideSeen: 'sightreading_guide_seen',
   soundEnabled: 'sightreading_sound_enabled',
+  melodySongId: 'sightreading_melody_song_id',
 } as const;
 
 /** 默认训练统计 */
@@ -127,4 +128,22 @@ export function loadSoundEnabled(): boolean {
 /** 保存声音开关状态 */
 export function saveSoundEnabled(enabled: boolean): void {
   localStorage.setItem(STORAGE_KEYS.soundEnabled, String(enabled));
+}
+
+/** 读取统一旋律之旅当前选择的歌曲 id（识谱与乐曲练习共享） */
+export function loadMelodySongId(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEYS.melodySongId);
+  } catch {
+    return null;
+  }
+}
+
+/** 保存统一旋律之旅当前选择的歌曲 id */
+export function saveMelodySongId(id: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.melodySongId, id);
+  } catch {
+    // 存储失败时静默忽略
+  }
 }

@@ -31,6 +31,7 @@ import { useScales } from './hooks/useScales';
 import { usePianoSound } from './hooks/usePianoSound';
 import { loadGuideSeen, saveGuideSeen, loadBestStreak, loadStats } from './lib/storage';
 import type { AppMode, Screen, SessionStats, ToastItem } from './types';
+import type { PresetSong } from './lib/songLibrary';
 import { useLanguage } from './i18n/LanguageContext';
 
 function App() {
@@ -172,14 +173,32 @@ function App() {
     setScreen('arena');
   }, []);
 
+  // — 统一旋律之旅：阶段一（识谱）→ 阶段二（乐曲练习），同一首歌 —
+  const handleGoToSongPractice = useCallback((song: PresetSong) => {
+    if (training.isTraining) training.stopTraining();
+    songPractice.loadSong(song);
+    setArenaMode('song');
+    setScreen('arena');
+  }, [training, songPractice]);
+
+  // — 统一旋律之旅：阶段二（乐曲练习）→ 阶段一（识谱），同一首歌 —
+  const handleGoToSightReading = useCallback((song: PresetSong) => {
+    songPractice.pause();
+    // 直接进入这首歌的逐音识谱（强制单音旋律模式）
+    training.startSongReading(song);
+    setArenaMode('training');
+    setScreen('arena');
+  }, [songPractice, training]);
+
   // — Arena → Hub (back button) —
   const handleBackToHub = useCallback(() => {
     // Stop any active sessions
     if (training.isTraining) training.stopTraining();
     if (rhythm.isPlaying) rhythm.stop();
     if (scales.isPlaying) scales.stop();
+    if (songPractice.isPlaying) songPractice.pause();
     setScreen('hub');
-  }, [training, rhythm, scales]);
+  }, [training, rhythm, scales, songPractice]);
 
   // — Arena → Review (session end) —
   const handleSessionEnd = useCallback(() => {
@@ -255,6 +274,8 @@ function App() {
               pianoSound={pianoSound}
               midi={midi}
               onVirtualKeyPress={handleVirtualKeyPress}
+              onGoToSongPractice={handleGoToSongPractice}
+              onGoToSightReading={handleGoToSightReading}
             />
           </motion.div>
         )}
