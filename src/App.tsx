@@ -28,6 +28,7 @@ import { useFreePlay } from './hooks/useFreePlay';
 import { useSongPractice } from './hooks/useSongPractice';
 import { useRhythm } from './hooks/useRhythm';
 import { useScales } from './hooks/useScales';
+import { useRandomNotes } from './hooks/useRandomNotes';
 import { usePianoSound } from './hooks/usePianoSound';
 import { loadGuideSeen, saveGuideSeen, loadBestStreak, loadStats } from './lib/storage';
 import type { AppMode, Screen, SessionStats, ToastItem } from './types';
@@ -49,6 +50,7 @@ function App() {
   const songPractice = useSongPractice();
   const rhythm = useRhythm();
   const scales = useScales();
+  const randomNotes = useRandomNotes();
   const pianoSound = usePianoSound();
 
   // — First-time onboarding —
@@ -95,6 +97,8 @@ function App() {
   songPracticeRef.current = songPractice;
   const scalesRef = useRef(scales);
   scalesRef.current = scales;
+  const randomNotesRef = useRef(randomNotes);
+  randomNotesRef.current = randomNotes;
   const pianoSoundRef = useRef(pianoSound);
   pianoSoundRef.current = pianoSound;
   const arenaModeRef = useRef(arenaMode);
@@ -131,6 +135,10 @@ function App() {
         if (isNoteOn) {
           scalesRef.current.submitAnswer(note);
         }
+      } else if (mode === 'random') {
+        if (isNoteOn) {
+          randomNotesRef.current.submitAnswer(note);
+        }
       } else {
         if (isNoteOn && trainingRef.current.isTraining) {
           trainingRef.current.submitAnswer(note);
@@ -158,12 +166,15 @@ function App() {
       } else if (mode === 'scales') {
         pianoSound.playNote(midiNote);
         scales.submitAnswer(midiNote);
+      } else if (mode === 'random') {
+        pianoSound.playNote(midiNote);
+        randomNotes.submitAnswer(midiNote);
       } else {
         pianoSound.playNote(midiNote);
         training.submitAnswer(midiNote);
       }
     },
-    [arenaMode, freePlay, pianoSound, songPractice, training],
+    [arenaMode, freePlay, pianoSound, songPractice, scales, randomNotes, training],
   );
 
   // — Hub → Arena navigation —
@@ -178,12 +189,18 @@ function App() {
     if (training.isTraining) training.stopTraining();
     if (rhythm.isPlaying) rhythm.stop();
     if (scales.isPlaying) scales.stop();
+    if (randomNotes.isPlaying) randomNotes.stop();
     setScreen('hub');
-  }, [training, rhythm, scales]);
+  }, [training, rhythm, scales, randomNotes]);
 
   // — Arena → Review (session end) —
   const handleSessionEnd = useCallback(() => {
-    const src = arenaMode === 'scales' ? scales.stats : training.stats;
+    const src =
+      arenaMode === 'scales'
+        ? scales.stats
+        : arenaMode === 'random'
+          ? randomNotes.stats
+          : training.stats;
     const avgRT = src.reactionCount > 0
       ? Math.round(src.totalReactionTime / src.reactionCount)
       : 0;
@@ -197,7 +214,7 @@ function App() {
       duration: 0,
     });
     setScreen('review');
-  }, [arenaMode, scales.stats, training.stats]);
+  }, [arenaMode, scales.stats, randomNotes.stats, training.stats]);
 
   // — Review → Arena (retry) —
   const handleRetry = useCallback(() => {
@@ -252,6 +269,7 @@ function App() {
               rhythm={rhythm}
               songPractice={songPractice}
               scales={scales}
+              random={randomNotes}
               pianoSound={pianoSound}
               midi={midi}
               onVirtualKeyPress={handleVirtualKeyPress}

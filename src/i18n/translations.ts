@@ -23,6 +23,7 @@ export const en = {
       rhythm: 'Rhythm',
       song: 'Repertoire',
       scales: 'Scale Run',
+      random: 'Random Notes',
     },
     modeDesc: {
       training: 'Identify notes on the staff',
@@ -30,6 +31,7 @@ export const en = {
       rhythm: 'Master timing & pulse',
       song: 'Play classical melodies',
       scales: 'Flowing scale practice',
+      random: 'Fully random sight reading',
     },
     stat: {
       bestStreak: 'BEST STREAK',
@@ -58,6 +60,7 @@ export const en = {
       rhythm: 'Rhythm Session',
       song: 'Repertoire Session',
       scales: 'Scale Run Session',
+      random: 'Random Notes Session',
     },
     message: {
       exquisite: 'Exquisite. Your reading grows sharper with each session.',
@@ -81,13 +84,14 @@ export const en = {
       'Plug in a MIDI keyboard and Nocturne listens as you play. No keyboard yet? You can also tap the on-screen keys. Tap the MIDI indicator in the corner to connect at any time.',
     step3Title: 'Choose Your Path',
     step3Body:
-      'Five ways to grow: Training sharpens note reading, Free Play explores chords in real time, Rhythm builds your timing, Song lets you practice real pieces, and Scale Run flows scales from right to left like a rhythm game.',
+      'Six ways to grow: Training sharpens note reading, Free Play explores chords in real time, Rhythm builds your timing, Song lets you practice real pieces, Scale Run flows scales from right to left like a rhythm game, and Random Notes throws fully unpredictable notes at you.',
     path: {
       training: 'Training',
       freeplay: 'Free Play',
       rhythm: 'Rhythm',
       song: 'Song',
       scales: 'Scale Run',
+      random: 'Random',
     },
     skip: 'Skip',
     next: 'Next',
@@ -190,6 +194,11 @@ export const en = {
     begin: 'Begin',
     end: 'End',
   },
+  random: {
+    startTitle: 'Play the random notes as they flow',
+    begin: 'Begin',
+    end: 'End',
+  },
 };
 
 export const zh = {
@@ -205,6 +214,7 @@ export const zh = {
       rhythm: '节奏训练',
       song: '乐曲练习',
       scales: '音阶流动',
+      random: '随机识谱',
     },
     modeDesc: {
       training: '在五线谱上辨认音符',
@@ -212,6 +222,7 @@ export const zh = {
       rhythm: '掌握节奏与律动',
       song: '演奏经典旋律',
       scales: '音阶连续滚动练习',
+      random: '音符完全随机跳动',
     },
     stat: {
       bestStreak: '最佳连击',
@@ -240,6 +251,7 @@ export const zh = {
       rhythm: '节奏训练',
       song: '乐曲练习',
       scales: '音阶流动练习',
+      random: '随机识谱练习',
     },
     message: {
       exquisite: '精妙。你的识谱能力在每次练习中愈发敏锐。',
@@ -263,13 +275,14 @@ export const zh = {
       '插上 MIDI 键盘，夜曲就会在你弹奏时静静倾听。还没有键盘？你也可以直接点击屏幕上的琴键。随时可点击角落的 MIDI 指示来连接设备。',
     step3Title: '选择你的路径',
     step3Body:
-      '五条成长路径：训练打磨识谱、自由弹奏实时探索和弦、节奏锤炼你的律动、乐曲让你练习真实曲子，音阶流动则像音游一样让音符从右往左连续滚动，巩固识谱。',
+      '六条成长路径：训练打磨识谱、自由弹奏实时探索和弦、节奏锤炼你的律动、乐曲让你练习真实曲子，音阶流动像音游一样让音符从右往左连续滚动，随机识谱则让音符完全随机跳动，纯粹考验读谱反应。',
     path: {
       training: '训练',
       freeplay: '自由弹奏',
       rhythm: '节奏',
       song: '乐曲',
       scales: '音阶',
+      random: '随机',
     },
     skip: '跳过',
     next: '下一步',
@@ -368,6 +381,11 @@ export const zh = {
   },
   scales: {
     startTitle: '跟随流动的音阶，逐个弹奏',
+    begin: '开始',
+    end: '结束',
+  },
+  random: {
+    startTitle: '音符完全随机跳动，逐个弹奏',
     begin: '开始',
     end: '结束',
   },

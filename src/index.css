@@ -258,10 +258,10 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
 /* — Portals Grid — */
 .hub-portals {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 18px;
   width: 100%;
-  max-width: 1120px;
+  max-width: 1180px;
   opacity: 0;
   animation: fade-up 1000ms var(--ease-out-expo) 800ms forwards;
 }

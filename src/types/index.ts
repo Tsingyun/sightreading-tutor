@@ -116,8 +116,14 @@ export interface AnswerRecord {
   timestamp: number;
 }
 
-/** 应用模式：识谱训练 / 自由弹奏 / 节奏训练 / 乐曲练习 / 音阶流动 */
-export type AppMode = 'training' | 'freeplay' | 'rhythm' | 'song' | 'scales';
+/** 应用模式：识谱训练 / 自由弹奏 / 节奏训练 / 乐曲练习 / 音阶流动 / 随机识谱 */
+export type AppMode =
+  | 'training'
+  | 'freeplay'
+  | 'rhythm'
+  | 'song'
+  | 'scales'
+  | 'random';
 
 /** 识别出的和弦信息（自由弹奏模式） */
 export interface IdentifiedChord {

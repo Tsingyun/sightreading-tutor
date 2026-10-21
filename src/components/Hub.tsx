@@ -46,6 +46,7 @@ const PORTALS: PortalConfig[] = [
   { mode: 'rhythm', number: '03', icon: '♩', color: '#7CB069' },
   { mode: 'song', number: '04', icon: '𝄞', color: '#C76B6B' },
   { mode: 'scales', number: '05', icon: '♬', color: '#9C8AD6' },
+  { mode: 'random', number: '06', icon: '⚄', color: '#4FA8A0' },
 ];
 
 /** 将 #RRGGBB 转为 rgba 字符串 */
