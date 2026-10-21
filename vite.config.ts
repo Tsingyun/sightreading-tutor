@@ -6,9 +6,6 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   // 使用相对路径，兼容 GitHub Pages 等子路径部署
   base: './',
-  // 允许通过沙箱/隧道等外部 host 访问 dev server（如在线预览域名）
-  server: { allowedHosts: true },
-  preview: { allowedHosts: true },
   plugins: [
     react(),
     VitePWA({

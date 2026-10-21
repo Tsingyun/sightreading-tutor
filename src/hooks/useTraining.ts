@@ -1,14 +1,11 @@
 /**
  * useTraining Hook
  * ============================================
- * 核心训练逻辑：沿歌曲旋律出题、答案判定、统计追踪。
+ * 核心训练逻辑：随机出题、答案判定、统计追踪。
  *
- * 与乐曲练习整合为统一的「旋律之旅」后，单音识谱不再随机跳音：
- * - single: 沿当前歌曲的完整旋律依次呈现音符（见 lib/songLibrary），
- *           弹对自动前进到旋律的下一个音，读完整首即完成阶段一，
- *           可无缝过渡到同一首歌的乐曲练习（阶段二）。
- * - chord:  和弦训练（2/3/4 个音符），仍为随机和弦辨认，
- *           弹奏完成后提示和弦名称。
+ * 支持两种训练模式：
+ * - single: 单音训练（原有模式）
+ * - chord:  和弦训练（2/3/4 个音符），弹奏完成后提示和弦名称
  *
  * 里程碑功能：
  * - 每完成 100 题时触发里程碑庆祝
@@ -23,8 +20,7 @@ import type {
   ClefType,
   ChordInfo,
 } from '../types';
-import { midiToNoteInfo, generateRandomChord, getDifficultyConfig, getNoteHint } from '../lib/music';
-import { findSongById, getPlayableNotes, type PresetSong } from '../lib/songLibrary';
+import { midiToNoteInfo, generateRandomNote, generateRandomNoteInKey, generateRandomChord, getDifficultyConfig, getNoteHint } from '../lib/music';
 import {
   loadStats,
   saveStats,
@@ -32,8 +28,6 @@ import {
   saveConfig,
   loadBestStreak,
   saveBestStreak,
-  loadMelodySongId,
-  saveMelodySongId,
   DEFAULT_STATS,
 } from '../lib/storage';
 
@@ -76,21 +70,6 @@ export interface UseTrainingReturn {
   hintText: string;
   /** 请求下一级提示 */
   requestHint: () => void;
-  /** —— 统一旋律之旅（单音模式）—— */
-  /** 当前跟随的歌曲（标题在页面标题栏显示） */
-  melodySong: PresetSong;
-  /** 当前音符在旋律可弹序列中的位置（0 起；完成时等于 melodyTotal） */
-  melodyIndex: number;
-  /** 当前歌曲可弹音符总数 */
-  melodyTotal: number;
-  /** 是否已完整读完这首歌的旋律（阶段一完成） */
-  isMelodyComplete: boolean;
-  /** 选择要跟随识谱的歌曲（重置到旋律开头） */
-  selectSong: (song: PresetSong) => void;
-  /** 选中歌曲并立即开始逐音识谱（乐曲练习回阶段一时用，强制单音旋律模式） */
-  startSongReading: (song: PresetSong) => void;
-  /** 关闭「读完」完成态，回到选歌 */
-  dismissMelodyComplete: () => void;
   /** 开始训练 */
   startTraining: () => void;
   /** 停止训练 */
@@ -133,16 +112,8 @@ export function useTraining(): UseTrainingReturn {
   /** 提示文本 */
   const [hintText, setHintText] = useState('');
 
-  // —— 统一旋律之旅状态 ——
-  const [melodySong, setMelodySong] = useState<PresetSong>(() => findSongById(loadMelodySongId()));
-  const [melodyIndex, setMelodyIndex] = useState(0);
-  const [isMelodyComplete, setIsMelodyComplete] = useState(false);
-  const melodySongRef = useRef(melodySong);
-  melodySongRef.current = melodySong;
-  const melodyIndexRef = useRef(0);
-  const isTrainingRef = useRef(false);
-
   const questionStartTimeRef = useRef<number>(0);
+  const lastNoteRef = useRef<number | null>(null);
   const lastChordRootRef = useRef<number | null>(null);
   /** 标记当前题目是否已经计入统计（避免重试时重复计数） */
   const statsCountedRef = useRef(false);
@@ -167,170 +138,93 @@ export function useTraining(): UseTrainingReturn {
     }, 800);
   }, [config.showNoteLabel]);
 
-  /** 清除每题的临时状态（闪现、提示） */
-  const resetQuestionChrome = useCallback(() => {
+  /** 生成下一题 */
+  const nextQuestion = useCallback(() => {
+    // 清除音名闪现
     setFlashLabel(false);
     if (flashLabelTimerRef.current) {
       clearTimeout(flashLabelTimerRef.current);
       flashLabelTimerRef.current = null;
     }
+    // 重置提示
     setHintLevel(0);
     setHintText('');
-  }, []);
 
-  /**
-   * 在谱面上呈现旋律的第 pos 个音（单音模式）。
-   * pos 超出旋律长度时进入「读完」完成态，等待过渡到乐曲练习。
-   */
-  const presentMelodyNote = useCallback((song: PresetSong, pos: number) => {
-    const playable = getPlayableNotes(song);
-    if (pos >= playable.length) {
-      melodyIndexRef.current = playable.length;
-      setMelodyIndex(playable.length);
+    if (config.mode === 'chord') {
+      // —— 和弦模式 ——
+      const chord = generateRandomChord(
+        { low: config.lowNote, high: config.highNote },
+        config.chordSize,
+        lastChordRootRef.current,
+      );
+      lastChordRootRef.current = chord.root.midi;
+
+      // 双谱表模式下，根据根音选择谱号
+      if (config.clef === 'both') {
+        const clef: 'treble' | 'bass' = chord.root.midi >= 60 ? 'treble' : 'bass';
+        chord.notes.forEach((n) => (n.clef = clef));
+      } else {
+        chord.notes.forEach((n) => (n.clef = config.clef as 'treble' | 'bass'));
+      }
+
+      setCurrentChord(chord);
       setCurrentNote(null);
-      setCurrentChord(null);
-      setAnswerState('idle');
-      setIsTraining(false);
-      isTrainingRef.current = false;
-      setIsMelodyComplete(true);
-      return;
-    }
-    melodyIndexRef.current = pos;
-    setMelodyIndex(pos);
-    const note = midiToNoteInfo(playable[pos].midi);
-    // 旋律识谱全程固定高音谱表，与乐曲练习的谱面保持一致，不随单个音高翻谱号
-    note.clef = 'treble';
-    setCurrentNote(note);
-    setCurrentChord(null);
-    setAnswerState('pending');
-    setPressedNote(null);
-    setPlayedIndices([]);
-    setWrongNote(null);
-    statsCountedRef.current = false;
-    questionStartTimeRef.current = performance.now();
-  }, []);
-
-  /** 生成随机和弦题（和弦模式保留随机辨认） */
-  const presentChordQuestion = useCallback(() => {
-    const chord = generateRandomChord(
-      { low: config.lowNote, high: config.highNote },
-      config.chordSize,
-      lastChordRootRef.current,
-    );
-    lastChordRootRef.current = chord.root.midi;
-
-    if (config.clef === 'both') {
-      const clef: 'treble' | 'bass' = chord.root.midi >= 60 ? 'treble' : 'bass';
-      chord.notes.forEach((n) => (n.clef = clef));
+      setAnswerState('pending');
+      setPressedNote(null);
+      setPlayedIndices([]);
+      setWrongNote(null);
+      statsCountedRef.current = false;
+      questionStartTimeRef.current = performance.now();
     } else {
-      chord.notes.forEach((n) => (n.clef = config.clef as 'treble' | 'bass'));
-    }
+      // —— 单音模式 ——
+      let midi: number;
+      if (config.keySignature && config.keySignature !== 'C') {
+        // 调号模式：生成调内音
+        midi = generateRandomNoteInKey(
+          { low: config.lowNote, high: config.highNote },
+          config.keySignature,
+          lastNoteRef.current,
+        );
+      } else {
+        midi = generateRandomNote(
+          { low: config.lowNote, high: config.highNote },
+          config.includeAccidentals,
+          lastNoteRef.current,
+        );
+      }
+      lastNoteRef.current = midi;
+      const note = midiToNoteInfo(midi);
 
-    setCurrentChord(chord);
-    setCurrentNote(null);
-    setAnswerState('pending');
-    setPressedNote(null);
-    setPlayedIndices([]);
-    setWrongNote(null);
-    statsCountedRef.current = false;
-    questionStartTimeRef.current = performance.now();
+      if (config.clef === 'both') {
+        note.clef = note.midi >= 60 ? 'treble' : 'bass';
+      } else {
+        note.clef = config.clef;
+      }
+
+      setCurrentNote(note);
+      setCurrentChord(null);
+      setAnswerState('pending');
+      setPressedNote(null);
+      setPlayedIndices([]);
+      setWrongNote(null);
+      statsCountedRef.current = false;
+      questionStartTimeRef.current = performance.now();
+    }
   }, [config]);
 
-  /** 重新呈现当前题（设置变化时用，不推进旋律） */
-  const presentCurrentQuestion = useCallback(() => {
-    resetQuestionChrome();
-    if (config.mode === 'chord') {
-      presentChordQuestion();
-    } else {
-      presentMelodyNote(melodySongRef.current, melodyIndexRef.current);
-    }
-  }, [config.mode, presentChordQuestion, presentMelodyNote, resetQuestionChrome]);
-
-  /**
-   * 下一题：单音模式 = 沿旋律前进一个音（而非随机跳音）；
-   * 和弦模式 = 新的随机和弦。
-   */
-  const nextQuestion = useCallback(() => {
-    resetQuestionChrome();
-    if (config.mode === 'chord') {
-      presentChordQuestion();
-    } else {
-      presentMelodyNote(melodySongRef.current, melodyIndexRef.current + 1);
-    }
-  }, [config.mode, presentChordQuestion, presentMelodyNote, resetQuestionChrome]);
-
-  /** 选择跟随识谱的歌曲：回到旋律开头（训练中则立即呈现第一音） */
-  const selectSong = useCallback((song: PresetSong) => {
-    melodySongRef.current = song;
-    melodyIndexRef.current = 0;
-    setMelodySong(song);
-    setMelodyIndex(0);
-    setIsMelodyComplete(false);
-    saveMelodySongId(song.id);
-    resetQuestionChrome();
-    if (isTrainingRef.current) {
-      if (config.mode === 'chord') {
-        presentChordQuestion();
-      } else {
-        presentMelodyNote(song, 0);
-      }
-    } else {
-      setCurrentNote(null);
-      setCurrentChord(null);
-      setAnswerState('idle');
-    }
-  }, [config.mode, presentChordQuestion, presentMelodyNote, resetQuestionChrome]);
-
-  /** 选中歌曲并立即开始逐音识谱（统一之旅的反向过渡入口） */
-  const startSongReading = useCallback((song: PresetSong) => {
-    melodySongRef.current = song;
-    melodyIndexRef.current = 0;
-    setMelodySong(song);
-    setMelodyIndex(0);
-    saveMelodySongId(song.id);
-    // 确保处于单音旋律模式（即使用户此前在做和弦辨认）
-    setConfig((prev) => {
-      if (prev.mode === 'single') return prev;
-      const next = { ...prev, mode: 'single' as const };
-      saveConfig(next);
-      return next;
-    });
-    setIsMelodyComplete(false);
-    setIsTraining(true);
-    isTrainingRef.current = true;
-    resetQuestionChrome();
-    presentMelodyNote(song, 0);
-  }, [presentMelodyNote, resetQuestionChrome]);
-
-  /** 开始训练：单音模式从当前歌曲旋律的第一个音开始 */
+  /** 开始训练 */
   const startTraining = useCallback(() => {
     setIsTraining(true);
-    isTrainingRef.current = true;
-    setIsMelodyComplete(false);
-    resetQuestionChrome();
-    if (config.mode === 'chord') {
-      presentChordQuestion();
-    } else {
-      presentMelodyNote(melodySongRef.current, 0);
-    }
-  }, [config.mode, presentChordQuestion, presentMelodyNote, resetQuestionChrome]);
+    nextQuestion();
+  }, [nextQuestion]);
 
   /** 停止训练 */
   const stopTraining = useCallback(() => {
     setIsTraining(false);
-    isTrainingRef.current = false;
-    setIsMelodyComplete(false);
     setCurrentNote(null);
     setCurrentChord(null);
     setAnswerState('idle');
     setPlayedIndices([]);
-  }, []);
-
-  /** 关闭完成态，回到选歌界面 */
-  const dismissMelodyComplete = useCallback(() => {
-    setIsMelodyComplete(false);
-    melodyIndexRef.current = 0;
-    setMelodyIndex(0);
   }, []);
 
   /** 检查并触发里程碑 */
@@ -483,10 +377,10 @@ export function useTraining(): UseTrainingReturn {
         }
         statsCountedRef.current = true;
 
-        // 答对后短暂停留再沿旋律前进到下一个音，保持旋律的连贯感
+        // 缩短单音答对后的等待，让节奏更连贯（原 400ms → 180ms）
         setTimeout(() => {
           if (isTraining) nextQuestion();
-        }, 320);
+        }, 180);
       } else {
         setAnswerState('wrong');
 
@@ -640,11 +534,10 @@ export function useTraining(): UseTrainingReturn {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 当训练中且配置变化时，重新呈现当前题
-  // （单音模式停留在旋律的当前位置，不再随机跳音或误推进）
+  // 当训练中且配置变化时，重新出题
   useEffect(() => {
     if (isTraining) {
-      presentCurrentQuestion();
+      nextQuestion();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.clef, config.lowNote, config.highNote, config.includeAccidentals, config.mode, config.chordSize, config.difficultyLevel, config.keySignature]);
@@ -678,13 +571,6 @@ export function useTraining(): UseTrainingReturn {
     hintLevel,
     hintText,
     requestHint,
-    melodySong,
-    melodyIndex,
-    melodyTotal: getPlayableNotes(melodySong).length,
-    isMelodyComplete,
-    selectSong,
-    startSongReading,
-    dismissMelodyComplete,
     startTraining,
     stopTraining,
     submitAnswer,

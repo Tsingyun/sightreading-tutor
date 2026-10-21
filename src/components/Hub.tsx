@@ -1,8 +1,7 @@
 /**
  * Hub 组件 — Nocturne 门户选择屏
  * ============================================
- * 应用入口：展示学习路径（歌曲旋律之旅 / 自由弹奏 / 节奏 / 音阶），
- * 其中「歌曲旋律之旅」已将识谱训练与乐曲练习整合为一条连贯流程，
+ * 应用入口：展示四条学习路径（识谱 / 自由弹奏 / 节奏 / 乐曲），
  * 用户点击门户卡片进入对应模式。底部展示累计统计。
  *
  * 动画策略：
@@ -41,14 +40,12 @@ interface PortalCardStyle extends CSSProperties {
 /** 与 --ease-out-expo 一致的三次贝塞尔，供 motion 复用 */
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
-// 识谱训练与乐曲练习已整合为统一入口「歌曲旋律之旅」：
-// 先跟随完整歌曲旋律逐音识谱，再无缝进入同一首歌的整曲练习，
-// 因此 Hub 不再为两者设置彼此割裂的门户。
 const PORTALS: PortalConfig[] = [
   { mode: 'training', number: '01', icon: '♪', color: '#C9A961' },
   { mode: 'freeplay', number: '02', icon: '♫', color: '#6B9AC4' },
   { mode: 'rhythm', number: '03', icon: '♩', color: '#7CB069' },
-  { mode: 'scales', number: '04', icon: '♬', color: '#9C8AD6' },
+  { mode: 'song', number: '04', icon: '𝄞', color: '#C76B6B' },
+  { mode: 'scales', number: '05', icon: '♬', color: '#9C8AD6' },
 ];
 
 /** 将 #RRGGBB 转为 rgba 字符串 */

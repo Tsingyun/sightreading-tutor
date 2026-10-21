@@ -443,9 +443,9 @@ export function renderSongStaff(options: SongRenderOptions): void {
   const staveY = 35;
   const stave = new Stave(staveX, staveY, drawWidth - staveX * 2);
 
-  // 旋律全程固定高音谱表（与逐音识谱阶段的谱面一致，不随当前音高翻谱号）
+  // 谱号取当前音符的谱号
   const clampedIndex = Math.max(0, Math.min(currentIndex, notes.length - 1));
-  const clef = 'treble';
+  const clef = notes[clampedIndex]?.clef || 'treble';
   stave.addClef(clef);
   stave.setContext(context);
   stave.setStyle({ strokeStyle: themeColors.staffColor, fillStyle: themeColors.staffColor });
@@ -485,8 +485,8 @@ export function renderSongStaff(options: SongRenderOptions): void {
     const accidentals = el.querySelectorAll('.vf-accidental text');
 
     let color: string;
-    if (i < clampedIndex || currentIndex >= notes.length) {
-      // 已弹对（currentIndex 超出末尾时整曲完成，全部着绿色）
+    if (i < clampedIndex) {
+      // 已弹对
       color = themeColors.noteCorrect;
     } else if (i === clampedIndex) {
       // 当前音符

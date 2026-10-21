@@ -27,11 +27,7 @@ export interface UseSongPracticeReturn {
   allNotes: NoteInfo[];
   answerState: AnswerState;
   wrongNote: number | null;
-  /** 是否已弹完整首歌曲（阶段二完成） */
-  isFinished: boolean;
   loadSong: (song: PresetSong) => void;
-  /** 退出当前歌曲，回到曲库选择 */
-  unloadSong: () => void;
   play: () => void;
   pause: () => void;
   reset: () => void;
@@ -51,7 +47,6 @@ export function useSongPractice(): UseSongPracticeReturn {
   const [allNotes, setAllNotes] = useState<NoteInfo[]>([]);
   const [answerState, setAnswerState] = useState<AnswerState>('idle');
   const [wrongNote, setWrongNote] = useState<number | null>(null);
-  const [isFinished, setIsFinished] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -81,12 +76,9 @@ export function useSongPractice(): UseSongPracticeReturn {
       idx++;
     }
     if (idx >= song.notes.length) {
-      // 乐曲结束：位置推进到末尾，进度达 100%，进入完成态
+      // 乐曲结束
       setIsPlaying(false);
       setCurrentNote(null);
-      setCurrentIndex(song.notes.length);
-      indexRef.current = song.notes.length;
-      setIsFinished(true);
       return -1;
     }
     setCurrentIndex(idx);
@@ -118,7 +110,6 @@ export function useSongPractice(): UseSongPracticeReturn {
     setAllNotes(computeAllNotes(song));
     setStats({ correct: 0, wrong: 0, total: 0 });
     setIsPlaying(false);
-    setIsFinished(false);
     setWrongNote(null);
 
     // 设置第一个可弹音符
@@ -135,21 +126,6 @@ export function useSongPractice(): UseSongPracticeReturn {
       setAnswerState('idle');
     }
   }, [computeAllNotes]);
-
-  const unloadSong = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-    setCurrentSong(null);
-    setAllNotes([]);
-    setCurrentNote(null);
-    setCurrentIndex(0);
-    indexRef.current = 0;
-    setIsPlaying(false);
-    setIsFinished(false);
-    setAnswerState('idle');
-    setStats({ correct: 0, wrong: 0, total: 0 });
-    setWrongNote(null);
-  }, []);
 
   const play = useCallback(() => {
     if (!currentSong) return;
@@ -168,7 +144,6 @@ export function useSongPractice(): UseSongPracticeReturn {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     setIsPlaying(false);
-    setIsFinished(false);
     setStats({ correct: 0, wrong: 0, total: 0 });
     setWrongNote(null);
     if (currentSong) {
@@ -245,9 +220,7 @@ export function useSongPractice(): UseSongPracticeReturn {
     allNotes,
     answerState,
     wrongNote,
-    isFinished,
     loadSong,
-    unloadSong,
     play,
     pause,
     reset,
